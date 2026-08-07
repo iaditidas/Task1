@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Coffee, Moon, Sun, Menu, X, BookOpen } from 'lucide-react';
+import { Sparkles, Moon, Sun, Menu, X, BookOpen } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Navbar({ darkMode, setDarkMode }) {
@@ -19,7 +19,6 @@ export default function Navbar({ darkMode, setDarkMode }) {
     { name: 'About', href: '#about' },
     { name: 'My Journey', href: '#journey' },
     { name: 'Education', href: '#education' },
-    { name: 'Skills', href: '#skills' },
     { name: 'Hobbies', href: '#hobbies' },
     { name: 'Memories', href: '#memories' },
     { name: 'Location', href: '#location' },
@@ -39,14 +38,14 @@ export default function Navbar({ darkMode, setDarkMode }) {
           className="flex items-center gap-2.5 group text-decoration-none"
         >
           <div className="p-2 rounded-full bg-[var(--color-accent-light)] text-[var(--color-primary)] transition-transform group-hover:rotate-12">
-            <Coffee className="w-5 h-5" />
+            <Sparkles className="w-5 h-5" />
           </div>
           <div className="flex flex-col">
             <span className="font-heading font-bold text-lg leading-tight tracking-wide text-[var(--text-primary)]">
               Aditi Das
             </span>
-            <span className="font-handwritten text-xs text-[var(--color-accent)] font-semibold -mt-1">
-              Coffee Shop Diary
+            <span className="text-xs text-[var(--color-accent)] font-semibold -mt-0.5">
+              Personal Portfolio
             </span>
           </div>
         </a>
@@ -111,7 +110,7 @@ export default function Navbar({ darkMode, setDarkMode }) {
                   key={link.name}
                   href={link.href}
                   onClick={() => setMobileOpen(false)}
-                  className="text-base font-medium text-[var(--text-primary)] hover:text-[var(--color-primary)] py-1 border-b border-dashed border-[var(--border-color)] flex items-center justify-between"
+                  className="text-base font-medium text-[var(--text-primary)] hover:text-[var(--color-primary)] py-1 border-b border-[var(--border-color)] flex items-center justify-between"
                 >
                   {link.name}
                   <BookOpen className="w-4 h-4 opacity-50" />

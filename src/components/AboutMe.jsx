@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Award, BookOpen, GraduationCap, MapPin, Coffee, Sparkles } from 'lucide-react';
+import { Award, BookOpen, GraduationCap, MapPin, Sparkles } from 'lucide-react';
 import profileImg from '../assets/images/profile.png';
 
 export default function AboutMe() {
@@ -35,7 +35,7 @@ export default function AboutMe() {
     <section id="about" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       {/* Section Title Header */}
       <div className="text-center mb-14">
-        <span className="font-handwritten text-xl text-[var(--color-accent)] font-semibold">
+        <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-accent)]">
           Chapter 01
         </span>
         <h2 className="font-heading text-4xl sm:text-5xl font-bold text-[var(--text-primary)] mt-1 section-title">
@@ -48,7 +48,7 @@ export default function AboutMe() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
         
-        {/* Left Column: Polaroid Profile Frame */}
+        {/* Left Column: Profile Card */}
         <motion.div
           initial={{ opacity: 0, x: -30 }}
           whileInView={{ opacity: 1, x: 0 }}
@@ -56,9 +56,9 @@ export default function AboutMe() {
           transition={{ duration: 0.8 }}
           className="lg:col-span-5 flex justify-center"
         >
-          <div className="relative max-w-sm w-full scrapbook-tape">
-            <div className="polaroid-card rotate-[-2deg] hover:rotate-0 transition-all duration-300">
-              <div className="overflow-hidden rounded-sm bg-[var(--bg-card-secondary)] aspect-square mb-4">
+          <div className="relative max-w-sm w-full">
+            <div className="polaroid-card transition-all duration-300">
+              <div className="overflow-hidden rounded-xl bg-[var(--bg-card-secondary)] aspect-square mb-4">
                 <img
                   src={profileImg}
                   alt="Aditi Das Profile"
@@ -69,8 +69,8 @@ export default function AboutMe() {
                 <h3 className="font-heading text-2xl font-bold text-[var(--text-primary)]">
                   Aditi Das
                 </h3>
-                <p className="font-handwritten text-lg text-[var(--color-accent)] font-medium">
-                  "Brewing code & ideas ☕"
+                <p className="text-sm text-[var(--color-accent)] font-medium mt-1">
+                  "Crafting code & ideas ✨"
                 </p>
               </div>
             </div>
@@ -94,7 +94,7 @@ export default function AboutMe() {
           {/* Biography Box */}
           <div className="p-6 sm:p-8 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-accent)] shadow-sm relative">
             <div className="flex items-center gap-2 text-[var(--color-primary)] mb-3">
-              <Coffee className="w-5 h-5" />
+              <Sparkles className="w-5 h-5" />
               <h3 className="font-heading text-xl font-bold">The Story So Far</h3>
             </div>
             
@@ -133,11 +133,11 @@ export default function AboutMe() {
             })}
           </div>
 
-          {/* Personality Brew Note */}
-          <div className="p-4 rounded-xl bg-[var(--bg-card-secondary)] border border-dashed border-[var(--border-accent)] flex items-center gap-3">
+          {/* Personality Note */}
+          <div className="p-4 rounded-xl bg-[var(--bg-card-secondary)] border border-[var(--border-accent)] flex items-center gap-3">
             <div className="text-2xl">🌱</div>
-            <p className="font-handwritten text-lg text-[var(--text-primary)]">
-              <strong>Personal Brew Note:</strong> Believer in small daily wins, clean code, aesthetic design, and endless curiosity.
+            <p className="text-sm text-[var(--text-primary)]">
+              <strong>Personal Note:</strong> Believer in small daily wins, clean code, aesthetic design, and endless curiosity.
             </p>
           </div>
 

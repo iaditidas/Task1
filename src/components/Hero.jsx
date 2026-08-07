@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowDown, Sparkles, Coffee, Heart } from 'lucide-react';
+import { ArrowDown, Sparkles, Heart } from 'lucide-react';
 
 export default function Hero() {
   const titles = [
     'Computer Science Student',
     'Aspiring AI Engineer',
     'Creative Developer',
-    'Coffee & Code Enthusiast'
+    'Code & Tech Enthusiast'
   ];
 
   const [titleIndex, setTitleIndex] = useState(0);
@@ -48,20 +48,15 @@ export default function Hero() {
       {/* Main Container */}
       <div className="max-w-4xl w-full text-center relative z-10 flex flex-col items-center">
         
-        {/* Coffee Cup Steam Scrapbook Icon */}
+        {/* Scrapbook Icon Badge */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           className="relative mb-6 cursor-pointer group"
         >
-          {/* Steam ripples */}
-          <div className="absolute -top-6 left-3 w-2 h-4 border-r-2 border-[var(--color-accent)] rounded-full animate-steam opacity-60" />
-          <div className="absolute -top-7 left-6 w-2 h-5 border-r-2 border-[var(--color-accent)] rounded-full animate-steam-delay opacity-60" />
-          <div className="absolute -top-5 left-9 w-2 h-4 border-r-2 border-[var(--color-accent)] rounded-full animate-steam opacity-60" />
-
           <div className="p-4 rounded-full bg-[var(--bg-card)] border-2 border-[var(--border-accent)] shadow-md text-[var(--color-primary)] flex items-center justify-center group-hover:scale-110 transition-transform">
-            <Coffee className="w-9 h-9" />
+            <Sparkles className="w-9 h-9" />
           </div>
         </motion.div>
 
@@ -72,8 +67,8 @@ export default function Hero() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="mb-4"
         >
-          <span className="stamp-badge font-handwritten text-base tracking-wider">
-            <Sparkles className="w-4 h-4 text-amber-600" /> Welcome to My Digital Scrapbook
+          <span className="stamp-badge text-sm font-medium tracking-wide">
+            <Sparkles className="w-4 h-4 text-amber-600" /> Welcome to My Portfolio
           </span>
         </motion.div>
 
@@ -98,18 +93,18 @@ export default function Hero() {
           <span className="w-0.5 h-6 bg-[var(--color-accent)] animate-pulse" />
         </motion.div>
 
-        {/* Cozy Journal Welcome Note */}
+        {/* Welcome Note Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.5 }}
-          className="journal-paper p-6 sm:p-8 max-w-2xl w-full mb-10 text-left shadow-sm scrapbook-tape"
+          className="journal-paper p-6 sm:p-8 max-w-2xl w-full mb-10 text-left shadow-sm"
         >
-          <p className="font-handwritten text-xl sm:text-2xl text-[var(--text-primary)] leading-relaxed pl-6">
-            "Grab a warm cup of coffee, settle in, and turn the pages of my journey. Here, technology meets curiosity, dreams, and continuous learning."
+          <p className="text-lg sm:text-xl text-[var(--text-primary)] leading-relaxed font-normal">
+            "Settle in and explore my portfolio. Here, technology meets curiosity, dreams, and continuous learning."
           </p>
-          <div className="mt-3 text-right pl-6 font-handwritten text-lg text-[var(--color-accent)] font-semibold">
-            — Aditi ☕
+          <div className="mt-3 text-right font-medium text-sm text-[var(--color-accent)]">
+            — Aditi ✨
           </div>
         </motion.div>
 
@@ -130,7 +125,7 @@ export default function Hero() {
 
           <a
             href="#contact"
-            className="px-8 py-3.5 rounded-full border-2 border-[var(--border-accent)] bg-[var(--bg-card)] text-[var(--text-primary)] font-medium hover:border-[var(--color-primary)] hover:scale-105 transition-all flex items-center gap-2 text-decoration-none"
+            className="px-8 py-3.5 rounded-full border border-[var(--border-accent)] bg-[var(--bg-card)] text-[var(--text-primary)] font-medium hover:border-[var(--color-primary)] hover:scale-105 transition-all flex items-center gap-2 text-decoration-none"
           >
             <span>Say Hello</span>
             <Heart className="w-4 h-4 text-rose-500 fill-rose-500" />
@@ -145,7 +140,7 @@ export default function Hero() {
           transition={{ delay: 1, duration: 1 }}
           className="mt-16 text-xs text-[var(--text-muted)] flex flex-col items-center gap-1 group text-decoration-none"
         >
-          <span className="font-handwritten text-base group-hover:text-[var(--color-primary)]">Scroll to read more</span>
+          <span className="text-xs font-medium tracking-wide group-hover:text-[var(--color-primary)]">Scroll to read more</span>
           <div className="w-6 h-10 border-2 border-[var(--border-accent)] rounded-full p-1 flex justify-center">
             <motion.div
               animate={{ y: [0, 12, 0] }}

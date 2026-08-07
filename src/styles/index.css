@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 /* ==========================================================================
    COFFEE SHOP DIARY - DESIGN SYSTEM & GLOBAL STYLES
    ========================================================================== */
@@ -59,8 +61,6 @@
 /* Reset & Base Styles */
 *, *::before, *::after {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 }
 
 html {
@@ -74,9 +74,6 @@ body {
   line-height: 1.6;
   overflow-x: hidden;
   transition: background-color 0.4s ease, color 0.4s ease;
-  background-image: 
-    radial-gradient(rgba(111, 78, 55, 0.03) 1px, transparent 1px);
-  background-size: 24px 24px;
 }
 
 /* Typography Utility Classes */
@@ -89,7 +86,7 @@ body {
 }
 
 .font-handwritten {
-  font-family: var(--font-handwritten);
+  font-family: var(--font-body);
 }
 
 /* Custom Scrollbar */
@@ -110,66 +107,40 @@ body {
   background: var(--color-primary);
 }
 
-/* Scrapbook Decorative Styling */
+/* Clean Card & Container Styling */
 .scrapbook-tape {
   position: relative;
 }
 
-.scrapbook-tape::before {
-  content: '';
-  position: absolute;
-  top: -12px;
-  left: 50%;
-  transform: translateX(-50%) rotate(-2deg);
-  width: 110px;
-  height: 26px;
-  background-color: rgba(216, 195, 165, 0.55);
-  backdrop-filter: blur(2px);
-  border-left: 2px dashed rgba(111, 78, 55, 0.3);
-  border-right: 2px dashed rgba(111, 78, 55, 0.3);
-  z-index: 10;
-  pointer-events: none;
-}
-
 .polaroid-card {
   background: var(--bg-card);
-  padding: 16px 16px 24px 16px;
-  border-radius: 4px;
-  box-shadow: var(--shadow-polaroid);
+  padding: 16px;
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
   border: 1px solid var(--border-color);
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .polaroid-card:hover {
-  transform: translateY(-8px) rotate(1.5deg) scale(1.02);
-  box-shadow: 0 20px 40px -10px rgba(62, 39, 35, 0.25);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
 }
 
 .journal-paper {
-  background-color: var(--bg-journal);
-  border: 1px dashed var(--border-accent);
-  border-radius: 12px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-accent);
+  border-radius: 16px;
   position: relative;
 }
 
-.journal-paper::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 32px;
-  bottom: 0;
-  width: 2px;
-  background-color: rgba(176, 137, 104, 0.2);
-}
-
-/* Stamp Badge */
+/* Tag Badge */
 .stamp-badge {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   padding: 6px 14px;
-  border: 2px dashed var(--color-accent);
-  border-radius: 20px;
+  border: 1px solid var(--border-accent);
+  border-radius: 9999px;
   background-color: var(--color-accent-light);
   color: var(--text-primary);
   font-weight: 500;
@@ -230,9 +201,4 @@ body {
   opacity: 0.6;
   z-index: -1;
   border-radius: 4px;
-}
-
-/* Pulse Glow Effect */
-.coffee-glow {
-  box-shadow: 0 0 20px rgba(176, 137, 104, 0.35);
 }
