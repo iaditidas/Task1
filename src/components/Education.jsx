@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { GraduationCap, Calendar, Award, BookOpen, School, Star } from 'lucide-react';
+import { fetchEducationData } from '../services/api';
+import SectionStateStatus from './SectionStateStatus';
 
 export default function Education() {
-  const edList = [
+  const defaultEdList = [
     {
       institution: 'Kishkinda University',
       degree: 'Bachelor of Technology (B.Tech)',
@@ -39,6 +41,36 @@ export default function Education() {
     }
   ];
 
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [edList, setEdList] = useState(defaultEdList);
+
+  const loadData = () => {
+    setLoading(true);
+    setError(false);
+    fetchEducationData()
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setEdList(data);
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setError(true);
+        setLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    loadData();
+    const handleNavClick = (e) => {
+      if (e.detail === '#education') loadData();
+    };
+    window.addEventListener('nav-section-click', handleNavClick);
+    return () => window.removeEventListener('nav-section-click', handleNavClick);
+  }, []);
+
   return (
     <section id="education" className="py-20 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
       <div className="text-center mb-16">
@@ -52,6 +84,10 @@ export default function Education() {
           Academic foundations that inspire my journey in computer science and technology.
         </p>
       </div>
+
+      {loading || error ? (
+        <SectionStateStatus loading={loading} error={error} onRetry={loadData} />
+      ) : (
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {edList.map((item, idx) => (
@@ -114,6 +150,7 @@ export default function Education() {
           </motion.div>
         ))}
       </div>
+      )}
     </section>
   );
 }

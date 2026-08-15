@@ -1,8 +1,5 @@
 @import "tailwindcss";
 
-/* ==========================================================================
-   COFFEE SHOP DIARY - DESIGN SYSTEM & GLOBAL STYLES
-   ========================================================================== */
 
 :root {
   /* Light Theme Color Tokens (Warm Coffee Scrapbook) */
@@ -33,33 +30,10 @@
   --font-handwritten: 'Caveat', cursive;
 }
 
-[data-theme='dark'] {
-  /* Dark Theme Color Tokens (Cozy Café Night) */
-  --bg-primary: #1E1A17;
-  --bg-card: #2A2420;
-  --bg-card-secondary: #362E2A;
-  --bg-journal: #25201C;
-  --border-color: #423832;
-  --border-accent: #594B43;
-
-  --text-primary: #F7F3EE;
-  --text-secondary: #D8C3A5;
-  --text-muted: #A8988A;
-
-  --color-primary: #C8A27A;
-  --color-dark-coffee: #151210;
-  --color-latte: #443932;
-  --color-cream: #1E1A17;
-  --color-accent: #C8A27A;
-  --color-accent-light: #3A312B;
-
-  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
-  --shadow-polaroid: 0 15px 35px -5px rgba(0, 0, 0, 0.7);
-}
-
 /* Reset & Base Styles */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -155,21 +129,18 @@ body {
   border-bottom: 1px solid rgba(216, 195, 165, 0.4);
 }
 
-[data-theme='dark'] .glass-nav {
-  background: rgba(30, 26, 23, 0.85);
-  border-bottom: 1px solid rgba(66, 56, 50, 0.5);
-}
-
 /* Steam Animation */
 @keyframes riseSteam {
   0% {
     transform: translateY(0) scaleX(1);
     opacity: 0.2;
   }
+
   50% {
     transform: translateY(-12px) scaleX(1.1);
     opacity: 0.7;
   }
+
   100% {
     transform: translateY(-24px) scaleX(1.2);
     opacity: 0;

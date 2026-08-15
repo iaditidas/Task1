@@ -1,15 +1,25 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, Heart, Sparkles, Search, Compass, Target, Sun } from 'lucide-react';
+import { fetchJourneyData } from '../services/api';
+import SectionStateStatus from './SectionStateStatus';
+
+const iconMap = {
+  MapPin,
+  Sun,
+  Search,
+  Target,
+  Compass
+};
 
 export default function MyJourney() {
-  const milestones = [
+  const defaultMilestones = [
     {
       year: 'The Beginnings',
       location: 'Aurangabad, Maharashtra',
       title: 'Born with Curiosity',
       description: 'Born in Aurangabad, Maharashtra. Growing up with warmth, affection, and a heart full of wonder.',
-      icon: MapPin,
+      icon_name: 'MapPin',
       tag: 'Origin'
     },
     {
@@ -17,7 +27,7 @@ export default function MyJourney() {
       location: 'Ballari, Karnataka',
       title: 'Raised in Ballari',
       description: 'Spent formative years in Ballari, Karnataka, learning values of hard work, discipline, and community.',
-      icon: Sun,
+      icon_name: 'Sun',
       tag: 'Roots'
     },
     {
@@ -25,7 +35,7 @@ export default function MyJourney() {
       location: 'The Tech Wonder',
       title: 'Curious About Computers',
       description: 'Fascinated by technology from a young age. Pondered deeply: "How does Google answer every question in seconds?"',
-      icon: Search,
+      icon_name: 'Search',
       tag: 'Inspiration'
     },
     {
@@ -33,7 +43,7 @@ export default function MyJourney() {
       location: 'Daily Evolution',
       title: 'Striving for Growth',
       description: 'Inspired by becoming a better version of myself every single day through continuous learning and persistence.',
-      icon: Target,
+      icon_name: 'Target',
       tag: 'Mindset'
     },
     {
@@ -41,10 +51,40 @@ export default function MyJourney() {
       location: 'Future Horizon',
       title: 'Making Parents Proud & Exploring the World',
       description: 'Driven by two core lifelong dreams: to make my parents proud through meaningful achievement, and to explore beautiful cultures across the globe.',
-      icon: Compass,
+      icon_name: 'Compass',
       tag: 'Aspiration'
     }
   ];
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [milestones, setMilestones] = useState(defaultMilestones);
+
+  const loadData = () => {
+    setLoading(true);
+    setError(false);
+    fetchJourneyData()
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setMilestones(data);
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setError(true);
+        setLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    loadData();
+    const handleNavClick = (e) => {
+      if (e.detail === '#journey' || e.detail === '#story') loadData();
+    };
+    window.addEventListener('nav-section-click', handleNavClick);
+    return () => window.removeEventListener('nav-section-click', handleNavClick);
+  }, []);
 
   return (
     <section id="journey" className="py-20 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
@@ -61,14 +101,16 @@ export default function MyJourney() {
         </p>
       </div>
 
-      {/* Timeline Container */}
-      <div className="relative">
+      {loading || error ? (
+        <SectionStateStatus loading={loading} error={error} onRetry={loadData} />
+      ) : (
+        <div className="relative">
         {/* Central Timeline Line */}
         <div className="absolute left-4 sm:left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[var(--color-accent)] via-[var(--color-primary)] to-[var(--color-latte)] -translate-x-1/2 rounded-full hidden sm:block opacity-60" />
 
         <div className="space-y-12 sm:space-y-16">
           {milestones.map((item, idx) => {
-            const Icon = item.icon;
+            const Icon = iconMap[item.icon_name] || item.icon || MapPin;
             const isEven = idx % 2 === 0;
 
             return (
@@ -120,6 +162,7 @@ export default function MyJourney() {
           })}
         </div>
       </div>
+      )}
     </section>
   );
 }

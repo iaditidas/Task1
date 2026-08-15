@@ -1,21 +1,45 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowDown, Sparkles, Heart } from 'lucide-react';
+import { fetchHeroData } from '../services/api';
 
 export default function Hero() {
-  const titles = [
+  const defaultTitles = [
     'Computer Science Student',
     'Aspiring AI Engineer',
     'Creative Developer',
     'Code & Tech Enthusiast'
   ];
 
+  const [heroData, setHeroData] = useState({
+    name: 'Aditi Das',
+    tagline: 'Welcome to My Portfolio',
+    titles: defaultTitles,
+    welcome_note: '"Settle in and explore my portfolio. Here, technology meets curiosity, dreams, and continuous learning."',
+    author_signature: '— Aditi ✨'
+  });
+
+  useEffect(() => {
+    fetchHeroData().then((data) => {
+      if (data) {
+        setHeroData((prev) => ({
+          name: data.name || prev.name,
+          tagline: data.tagline || prev.tagline,
+          titles: Array.isArray(data.titles) && data.titles.length > 0 ? data.titles : prev.titles,
+          welcome_note: data.welcome_note || prev.welcome_note,
+          author_signature: data.author_signature || prev.author_signature
+        }));
+      }
+    });
+  }, []);
+
+  const titles = heroData.titles;
   const [titleIndex, setTitleIndex] = useState(0);
   const [displayText, setDisplayText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    const currentFullText = titles[titleIndex];
+    const currentFullText = titles[titleIndex % titles.length] || '';
     const typingSpeed = isDeleting ? 40 : 80;
 
     const timer = setTimeout(() => {
@@ -34,7 +58,7 @@ export default function Hero() {
     }, typingSpeed);
 
     return () => clearTimeout(timer);
-  }, [displayText, isDeleting, titleIndex]);
+  }, [displayText, isDeleting, titleIndex, titles]);
 
   return (
     <section
@@ -68,7 +92,7 @@ export default function Hero() {
           className="mb-4"
         >
           <span className="stamp-badge text-sm font-medium tracking-wide">
-            <Sparkles className="w-4 h-4 text-amber-600" /> Welcome to My Portfolio
+            <Sparkles className="w-4 h-4 text-amber-600" /> {heroData.tagline}
           </span>
         </motion.div>
 
@@ -79,7 +103,7 @@ export default function Hero() {
           transition={{ duration: 0.8, delay: 0.3 }}
           className="font-heading text-5xl sm:text-7xl font-bold tracking-tight text-[var(--text-primary)] mb-3"
         >
-          Aditi Das
+          {heroData.name}
         </motion.h1>
 
         {/* Typewriter Subtitle */}
@@ -101,10 +125,10 @@ export default function Hero() {
           className="journal-paper p-6 sm:p-8 max-w-2xl w-full mb-10 text-left shadow-sm"
         >
           <p className="text-lg sm:text-xl text-[var(--text-primary)] leading-relaxed font-normal">
-            "Settle in and explore my portfolio. Here, technology meets curiosity, dreams, and continuous learning."
+            {heroData.welcome_note}
           </p>
           <div className="mt-3 text-right font-medium text-sm text-[var(--color-accent)]">
-            — Aditi ✨
+            {heroData.author_signature}
           </div>
         </motion.div>
 

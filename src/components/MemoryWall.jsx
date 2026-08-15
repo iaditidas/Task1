@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Camera, X, ZoomIn, Heart, Plus, Sparkles } from 'lucide-react';
 
@@ -6,6 +6,21 @@ import bharatanatyamImg from '../assets/images/bharatanatyam.jpg';
 import scienceExhibitionImg from '../assets/images/science_exhibition.jpg';
 import collegeAwardImg from '../assets/images/college_award.jpg';
 import currentImg from '../assets/images/current.png';
+import { fetchMemoriesData, createMemoryCard } from '../services/api';
+import SectionStateStatus from './SectionStateStatus';
+
+const localImageMap = {
+  '/assets/images/bharatanatyam.jpg': bharatanatyamImg,
+  '/assets/images/science_exhibition.jpg': scienceExhibitionImg,
+  '/assets/images/college_award.jpg': collegeAwardImg,
+  '/assets/images/current.png': currentImg
+};
+
+const resolveImage = (item) => {
+  if (item.image) return item.image;
+  if (item.image_url && localImageMap[item.image_url]) return localImageMap[item.image_url];
+  return item.image_url || currentImg;
+};
 
 export default function MemoryWall() {
   const initialMemories = [
@@ -38,6 +53,8 @@ export default function MemoryWall() {
     }
   ];
 
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [memories, setMemories] = useState(initialMemories);
   const [activeMemory, setActiveMemory] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -47,18 +64,56 @@ export default function MemoryWall() {
   const [newCaption, setNewCaption] = useState('');
   const [newTag, setNewTag] = useState('New Memory');
 
-  const handleAddMemory = (e) => {
+  const loadData = () => {
+    setLoading(true);
+    setError(false);
+    fetchMemoriesData()
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setMemories(data.map(item => ({
+            ...item,
+            image: resolveImage(item)
+          })));
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setError(true);
+        setLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    loadData();
+    const handleNavClick = (e) => {
+      if (e.detail === '#memories' || e.detail === '#photos') loadData();
+    };
+    window.addEventListener('nav-section-click', handleNavClick);
+    return () => window.removeEventListener('nav-section-click', handleNavClick);
+  }, []);
+
+  const handleAddMemory = async (e) => {
     e.preventDefault();
     if (!newTitle.trim()) return;
 
-    const newItem = {
-      id: Date.now(),
+    const payload = {
       title: newTitle,
       tag: newTag,
-      date: 'Just Now',
-      image: currentImg, // default fallback photo
       caption: newCaption || 'A fresh snapshot added to my digital diary.',
-      rotation: `${(Math.random() * 6 - 3).toFixed(1)}deg`
+      date: 'Just Now',
+      image_url: '/assets/images/current.png'
+    };
+
+    const created = await createMemoryCard(payload);
+    const newItem = {
+      id: created?.id || Date.now(),
+      title: created?.title || payload.title,
+      tag: created?.tag || payload.tag,
+      date: created?.date || payload.date,
+      image: currentImg,
+      caption: created?.caption || payload.caption,
+      rotation: created?.rotation || `${(Math.random() * 6 - 3).toFixed(1)}deg`
     };
 
     setMemories([newItem, ...memories]);
@@ -90,8 +145,10 @@ export default function MemoryWall() {
         </button>
       </div>
 
-      {/* Photo Gallery Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-2">
+      {loading || error ? (
+        <SectionStateStatus loading={loading} error={error} onRetry={loadData} />
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-2">
         {memories.map((item) => (
           <motion.div
             key={item.id}
@@ -133,6 +190,7 @@ export default function MemoryWall() {
           </motion.div>
         ))}
       </div>
+      )}
 
       {/* Lightbox Modal */}
       <AnimatePresence>

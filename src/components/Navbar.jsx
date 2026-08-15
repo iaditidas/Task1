@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Moon, Sun, Menu, X, BookOpen } from 'lucide-react';
+import { Sparkles, Menu, X, BookOpen } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function Navbar({ darkMode, setDarkMode }) {
+export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -20,10 +20,14 @@ export default function Navbar({ darkMode, setDarkMode }) {
     { name: 'My Journey', href: '#journey' },
     { name: 'Education', href: '#education' },
     { name: 'Hobbies', href: '#hobbies' },
+    { name: 'College', href: '#college' },
     { name: 'Memories', href: '#memories' },
-    { name: 'Location', href: '#location' },
     { name: 'Contact', href: '#contact' }
   ];
+
+  const handleNavClick = (href) => {
+    window.dispatchEvent(new CustomEvent('nav-section-click', { detail: href }));
+  };
 
   return (
     <nav
@@ -35,6 +39,7 @@ export default function Navbar({ darkMode, setDarkMode }) {
         {/* Brand Logo */}
         <a
           href="#home"
+          onClick={() => handleNavClick('#home')}
           className="flex items-center gap-2.5 group text-decoration-none"
         >
           <div className="p-2 rounded-full bg-[var(--color-accent-light)] text-[var(--color-primary)] transition-transform group-hover:rotate-12">
@@ -56,35 +61,16 @@ export default function Navbar({ darkMode, setDarkMode }) {
             <a
               key={link.name}
               href={link.href}
+              onClick={() => handleNavClick(link.href)}
               className="text-sm font-medium text-[var(--text-primary)] opacity-80 hover:opacity-100 hover:text-[var(--color-primary)] transition-colors relative py-1 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[var(--color-primary)] hover:after:w-full after:transition-all"
             >
               {link.name}
             </a>
           ))}
-
-          {/* Theme Toggle Button */}
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            aria-label="Toggle Theme"
-            className="p-2.5 rounded-full border border-[var(--border-accent)] bg-[var(--bg-card)] text-[var(--text-primary)] hover:scale-105 transition-transform flex items-center justify-center shadow-sm"
-          >
-            {darkMode ? (
-              <Sun className="w-4 h-4 text-amber-400" />
-            ) : (
-              <Moon className="w-4 h-4 text-stone-700" />
-            )}
-          </button>
         </div>
 
         {/* Mobile controls */}
         <div className="flex md:hidden items-center gap-3">
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            aria-label="Toggle Theme"
-            className="p-2 rounded-full border border-[var(--border-accent)] bg-[var(--bg-card)] text-[var(--text-primary)]"
-          >
-            {darkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-stone-700" />}
-          </button>
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Open Menu"
@@ -109,7 +95,10 @@ export default function Navbar({ darkMode, setDarkMode }) {
                 <a
                   key={link.name}
                   href={link.href}
-                  onClick={() => setMobileOpen(false)}
+                  onClick={() => {
+                    handleNavClick(link.href);
+                    setMobileOpen(false);
+                  }}
                   className="text-base font-medium text-[var(--text-primary)] hover:text-[var(--color-primary)] py-1 border-b border-[var(--border-color)] flex items-center justify-between"
                 >
                   {link.name}

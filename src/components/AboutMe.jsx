@@ -1,35 +1,71 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Award, BookOpen, GraduationCap, MapPin, Sparkles } from 'lucide-react';
 import profileImg from '../assets/images/profile.png';
+import { fetchAboutData } from '../services/api';
+import SectionStateStatus from './SectionStateStatus';
+
+const iconMap = {
+  Award,
+  BookOpen,
+  GraduationCap,
+  MapPin
+};
 
 export default function AboutMe() {
-  const stats = [
-    {
-      icon: Award,
-      label: 'Current CGPA',
-      value: '8.68',
-      color: 'bg-amber-100 text-amber-900 border-amber-300'
-    },
-    {
-      icon: BookOpen,
-      label: 'Current Semester',
-      value: '5th Semester',
-      color: 'bg-emerald-100 text-emerald-900 border-emerald-300'
-    },
-    {
-      icon: GraduationCap,
-      label: 'Degree',
-      value: 'B.Tech in CSE',
-      color: 'bg-amber-100 text-amber-900 border-amber-300'
-    },
-    {
-      icon: MapPin,
-      label: 'Location',
-      value: 'Ballari, KA',
-      color: 'bg-rose-100 text-rose-900 border-rose-300'
-    }
+  const defaultStats = [
+    { icon_name: 'Award', label: 'Current CGPA', value: '8.68' },
+    { icon_name: 'BookOpen', label: 'Current Semester', value: '5th Semester' },
+    { icon_name: 'GraduationCap', label: 'Degree', value: 'B.Tech in CSE' },
+    { icon_name: 'MapPin', label: 'Location', value: 'Ballari, KA' }
   ];
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  const [aboutData, setAboutData] = useState({
+    profile_name: 'Aditi Das',
+    subtitle: '"Crafting code & ideas ✨"',
+    story_heading: 'The Story So Far',
+    story_paragraph1: 'I am Aditi Das, a Computer Science student with a growing passion for Artificial Intelligence, software development, and solving real-world problems through technology.',
+    story_paragraph2: 'I enjoy learning new technologies, building creative projects, and continuously improving my programming skills. My goal is to become an AI Engineer and create impactful solutions that make everyday life better.',
+    personality_note: 'Believer in small daily wins, clean code, aesthetic design, and endless curiosity.',
+    stats: defaultStats
+  });
+
+  const loadData = () => {
+    setLoading(true);
+    setError(false);
+    fetchAboutData()
+      .then((data) => {
+        if (data) {
+          setAboutData((prev) => ({
+            profile_name: data.profile_name || prev.profile_name,
+            subtitle: data.subtitle || prev.subtitle,
+            story_heading: data.story_heading || prev.story_heading,
+            story_paragraph1: data.story_paragraph1 || prev.story_paragraph1,
+            story_paragraph2: data.story_paragraph2 || prev.story_paragraph2,
+            personality_note: data.personality_note || prev.personality_note,
+            stats: Array.isArray(data.stats) && data.stats.length > 0 ? data.stats : prev.stats
+          }));
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setError(true);
+        setLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    loadData();
+    const handleNavClick = (e) => {
+      if (e.detail === '#about') loadData();
+    };
+    window.addEventListener('nav-section-click', handleNavClick);
+    return () => window.removeEventListener('nav-section-click', handleNavClick);
+  }, []);
 
   return (
     <section id="about" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
@@ -45,6 +81,10 @@ export default function AboutMe() {
           A glimpse into who I am, what drives me, and my academic foundation.
         </p>
       </div>
+
+      {loading || error ? (
+        <SectionStateStatus loading={loading} error={error} onRetry={loadData} />
+      ) : (
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
         
@@ -67,10 +107,10 @@ export default function AboutMe() {
               </div>
               <div className="text-center pt-1">
                 <h3 className="font-heading text-2xl font-bold text-[var(--text-primary)]">
-                  Aditi Das
+                  {aboutData.profile_name}
                 </h3>
                 <p className="text-sm text-[var(--color-accent)] font-medium mt-1">
-                  "Crafting code & ideas ✨"
+                  {aboutData.subtitle}
                 </p>
               </div>
             </div>
@@ -95,21 +135,21 @@ export default function AboutMe() {
           <div className="p-6 sm:p-8 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-accent)] shadow-sm relative">
             <div className="flex items-center gap-2 text-[var(--color-primary)] mb-3">
               <Sparkles className="w-5 h-5" />
-              <h3 className="font-heading text-xl font-bold">The Story So Far</h3>
+              <h3 className="font-heading text-xl font-bold">{aboutData.story_heading}</h3>
             </div>
             
             <p className="text-[var(--text-primary)] leading-relaxed text-base opacity-90">
-              I am <strong className="text-[var(--color-primary)] font-semibold">Aditi Das</strong>, a Computer Science student with a growing passion for Artificial Intelligence, software development, and solving real-world problems through technology.
+              {aboutData.story_paragraph1}
             </p>
             <p className="text-[var(--text-primary)] leading-relaxed text-base opacity-90 mt-4">
-              I enjoy learning new technologies, building creative projects, and continuously improving my programming skills. My goal is to become an <strong className="text-[var(--color-primary)] font-semibold">AI Engineer</strong> and create impactful solutions that make everyday life better.
+              {aboutData.story_paragraph2}
             </p>
           </div>
 
           {/* Quick Stats Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-2">
-            {stats.map((stat, idx) => {
-              const Icon = stat.icon;
+            {aboutData.stats.map((stat, idx) => {
+              const Icon = iconMap[stat.icon_name] || Award;
               return (
                 <motion.div
                   key={stat.label}
@@ -137,13 +177,14 @@ export default function AboutMe() {
           <div className="p-4 rounded-xl bg-[var(--bg-card-secondary)] border border-[var(--border-accent)] flex items-center gap-3">
             <div className="text-2xl">🌱</div>
             <p className="text-sm text-[var(--text-primary)]">
-              <strong>Personal Note:</strong> Believer in small daily wins, clean code, aesthetic design, and endless curiosity.
+              <strong>Personal Note:</strong> {aboutData.personality_note}
             </p>
           </div>
 
         </motion.div>
 
       </div>
+      )}
     </section>
   );
 }

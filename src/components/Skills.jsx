@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Code, Terminal, Cpu, Layout, Sparkles } from 'lucide-react';
+import { fetchSkillsData } from '../services/api';
+import SectionStateStatus from './SectionStateStatus';
 
 export default function Skills() {
   const [activeTab, setActiveTab] = useState('All');
 
   const categories = ['All', 'Web & Frontend', 'Programming Languages', 'Tools & Platforms', 'Core Competencies'];
 
-  const skillData = [
+  const defaultSkillData = [
     { name: 'HTML5', category: 'Web & Frontend', level: 'Advanced', brew: '95%', icon: '🌐' },
     { name: 'CSS3', category: 'Web & Frontend', level: 'Advanced', brew: '90%', icon: '🎨' },
     { name: 'JavaScript (ES6+)', category: 'Web & Frontend', level: 'Advanced', brew: '88%', icon: '⚡' },
@@ -21,6 +23,36 @@ export default function Skills() {
     { name: 'Problem Solving', category: 'Core Competencies', level: 'Core', brew: '90%', icon: '🧠' },
     { name: 'UI Design & Wireframing', category: 'Core Competencies', level: 'Creative', brew: '85%', icon: '✏️' }
   ];
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [skillData, setSkillData] = useState(defaultSkillData);
+
+  const loadData = () => {
+    setLoading(true);
+    setError(false);
+    fetchSkillsData()
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setSkillData(data);
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setError(true);
+        setLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    loadData();
+    const handleNavClick = (e) => {
+      if (e.detail === '#skills') loadData();
+    };
+    window.addEventListener('nav-section-click', handleNavClick);
+    return () => window.removeEventListener('nav-section-click', handleNavClick);
+  }, []);
 
   const filteredSkills = activeTab === 'All'
     ? skillData
@@ -40,7 +72,11 @@ export default function Skills() {
         </p>
       </div>
 
-      {/* Filter Category Tabs */}
+      {loading || error ? (
+        <SectionStateStatus loading={loading} error={error} onRetry={loadData} />
+      ) : (
+        <>
+          {/* Filter Category Tabs */}
       <div className="flex flex-wrap items-center justify-center gap-2 mb-12">
         {categories.map((cat) => (
           <button
@@ -112,6 +148,8 @@ export default function Skills() {
           </motion.div>
         ))}
       </motion.div>
+        </>
+      )}
     </section>
   );
 }

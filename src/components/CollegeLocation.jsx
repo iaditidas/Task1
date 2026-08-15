@@ -1,26 +1,82 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, Navigation, ExternalLink, School, Compass } from 'lucide-react';
+import { fetchLocationData } from '../services/api';
+import SectionStateStatus from './SectionStateStatus';
 
 export default function CollegeLocation() {
-  const universityName = "Kishkinda University";
-  const locationCity = "Ballari, Karnataka, India";
-  const mapEmbedUrl = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d61685.74830113271!2d76.88330756782352!3d15.143644078716386!2m3!1f0!1f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bb71192e21b72e5%3A0xb3a27a810b402830!2sBallari%2C%20Karnataka!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin";
-  const directMapsUrl = "https://maps.google.com/?q=Kishkinda+University+Ballari+Karnataka";
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  const [locationInfo, setLocationInfo] = useState({
+    university_name: 'Kishkinda University',
+    location_city: 'Mount View Campus, Ballari, Karnataka',
+    description: 'Located in historical Ballari, Kishkinda University provides a vibrant academic environment for Computer Science & Engineering students to pursue innovation, research, and technical excellence.',
+    department: 'Computer Science Engineering',
+    academic_year: '2024 - 2028',
+    status: 'In Session (5th Sem)',
+    map_embed_url: 'https://maps.google.com/maps?q=Kishkinda%20University%2C%20Siruguppa%20Road%2C%20Ballari%2C%20Karnataka&t=&z=14&ie=UTF8&iwloc=&output=embed',
+    direct_maps_url: 'https://www.google.com/maps/search/?api=1&query=Kishkinda+University+Ballari+Karnataka'
+  });
+
+  const loadData = () => {
+    setLoading(true);
+    setError(false);
+    fetchLocationData()
+      .then((data) => {
+        if (data) {
+          setLocationInfo((prev) => ({
+            university_name: data.university_name || prev.university_name,
+            location_city: data.location_city || prev.location_city,
+            description: data.description || prev.description,
+            department: data.department || prev.department,
+            academic_year: data.academic_year || prev.academic_year,
+            status: data.status || prev.status,
+            map_embed_url: data.map_embed_url || prev.map_embed_url,
+            direct_maps_url: data.direct_maps_url || prev.direct_maps_url
+          }));
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setError(true);
+        setLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    loadData();
+    const handleNavClick = (e) => {
+      if (e.detail === '#college' || e.detail === '#location') loadData();
+    };
+    window.addEventListener('nav-section-click', handleNavClick);
+    return () => window.removeEventListener('nav-section-click', handleNavClick);
+  }, []);
+
+  const universityName = locationInfo.university_name;
+  const locationCity = locationInfo.location_city;
+  const mapEmbedUrl = locationInfo.map_embed_url;
+  const directMapsUrl = locationInfo.direct_maps_url;
 
   return (
-    <section id="location" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <section id="college" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative">
+      <div id="location" className="absolute -top-28" />
       <div className="text-center mb-14">
         <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-accent)]">
           Chapter 06
         </span>
         <h2 className="font-heading text-4xl sm:text-5xl font-bold text-[var(--text-primary)] mt-1 section-title">
-          College Location
+          College
         </h2>
         <p className="text-[var(--text-muted)] text-sm sm:text-base max-w-xl mx-auto mt-4">
           Where I learn, code, and innovate — Kishkinda University in Ballari, Karnataka.
         </p>
       </div>
+
+      {loading || error ? (
+        <SectionStateStatus loading={loading} error={error} onRetry={loadData} />
+      ) : (
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
         
@@ -50,21 +106,21 @@ export default function CollegeLocation() {
             </p>
 
             <p className="text-sm text-[var(--text-primary)] opacity-90 leading-relaxed mb-6">
-              Located in historical Ballari, Kishkinda University provides a vibrant academic environment for Computer Science & Engineering students to pursue innovation, research, and technical excellence.
+              {locationInfo.description}
             </p>
 
             <div className="p-4 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] space-y-2 mb-6">
               <div className="flex justify-between text-xs text-[var(--text-muted)]">
                 <span className="font-semibold text-[var(--text-primary)]">Department:</span>
-                <span>Computer Science Engineering</span>
+                <span>{locationInfo.department}</span>
               </div>
               <div className="flex justify-between text-xs text-[var(--text-muted)]">
                 <span className="font-semibold text-[var(--text-primary)]">Academic Year:</span>
-                <span>2024 - 2028</span>
+                <span>{locationInfo.academic_year}</span>
               </div>
               <div className="flex justify-between text-xs text-[var(--text-muted)]">
                 <span className="font-semibold text-[var(--text-primary)]">Status:</span>
-                <span className="text-emerald-700 dark:text-emerald-400 font-bold">In Session (5th Sem)</span>
+                <span className="text-emerald-700 font-bold">{locationInfo.status}</span>
               </div>
             </div>
 
@@ -114,6 +170,7 @@ export default function CollegeLocation() {
         </motion.div>
 
       </div>
+      )}
     </section>
   );
 }

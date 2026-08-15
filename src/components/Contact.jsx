@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Phone, Copy, Check, Send, Heart, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { fetchContactData, submitContactNote } from '../services/api';
 
 const GithubIcon = ({ className = "w-5 h-5" }) => (
   <svg className={className} fill="currentColor" viewBox="0 0 24 24">
@@ -9,12 +10,18 @@ const GithubIcon = ({ className = "w-5 h-5" }) => (
   </svg>
 );
 
+const iconMap = {
+  email: Mail,
+  phone: Phone,
+  github: GithubIcon
+};
+
 export default function Contact() {
   const [copiedField, setCopiedField] = useState(null);
   const [messageSent, setMessageSent] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', note: '' });
 
-  const contactItems = [
+  const defaultContactItems = [
     {
       id: 'email',
       icon: Mail,
@@ -41,15 +48,30 @@ export default function Contact() {
     }
   ];
 
+  const [contactItems, setContactItems] = useState(defaultContactItems);
+
+  useEffect(() => {
+    fetchContactData().then((data) => {
+      if (data && Array.isArray(data.items)) {
+        setContactItems(data.items.map(item => ({
+          ...item,
+          icon: iconMap[item.id] || Mail
+        })));
+      }
+    });
+  }, []);
+
   const handleCopy = (text, fieldId) => {
     navigator.clipboard.writeText(text);
     setCopiedField(fieldId);
     setTimeout(() => setCopiedField(null), 2000);
   };
 
-  const handleSubmitNote = (e) => {
+  const handleSubmitNote = async (e) => {
     e.preventDefault();
     if (!formData.name || !formData.note) return;
+
+    await submitContactNote(formData);
 
     confetti({
       particleCount: 80,
@@ -144,7 +166,7 @@ export default function Contact() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 10 }}
-                  className="p-3 rounded-xl bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 text-xs font-semibold text-center border border-emerald-300 flex items-center justify-center gap-2"
+                  className="p-3 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-semibold text-center border border-emerald-300 flex items-center justify-center gap-2"
                 >
                   <Sparkles className="w-4 h-4" /> Copied to clipboard!
                 </motion.div>
