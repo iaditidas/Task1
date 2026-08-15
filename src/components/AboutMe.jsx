@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { Award, BookOpen, GraduationCap, MapPin, Sparkles } from 'lucide-react';
 import profileImg from '../assets/images/profile.png';
 import { fetchAboutData } from '../services/api';
-import SectionStateStatus from './SectionStateStatus';
 
 const iconMap = {
   Award,
@@ -12,17 +11,14 @@ const iconMap = {
   MapPin
 };
 
+const defaultStats = [
+  { icon_name: 'Award', label: 'Current CGPA', value: '8.68' },
+  { icon_name: 'BookOpen', label: 'Current Semester', value: '5th Semester' },
+  { icon_name: 'GraduationCap', label: 'Degree', value: 'B.Tech in CSE' },
+  { icon_name: 'MapPin', label: 'Location', value: 'Ballari, KA' }
+];
+
 export default function AboutMe() {
-  const defaultStats = [
-    { icon_name: 'Award', label: 'Current CGPA', value: '8.68' },
-    { icon_name: 'BookOpen', label: 'Current Semester', value: '5th Semester' },
-    { icon_name: 'GraduationCap', label: 'Degree', value: 'B.Tech in CSE' },
-    { icon_name: 'MapPin', label: 'Location', value: 'Ballari, KA' }
-  ];
-
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-
   const [aboutData, setAboutData] = useState({
     profile_name: 'Aditi Das',
     subtitle: '"Crafting code & ideas ✨"',
@@ -33,9 +29,7 @@ export default function AboutMe() {
     stats: defaultStats
   });
 
-  const loadData = () => {
-    setLoading(true);
-    setError(false);
+  useEffect(() => {
     fetchAboutData()
       .then((data) => {
         if (data) {
@@ -49,22 +43,8 @@ export default function AboutMe() {
             stats: Array.isArray(data.stats) && data.stats.length > 0 ? data.stats : prev.stats
           }));
         }
-        setLoading(false);
       })
-      .catch((err) => {
-        console.error(err);
-        setError(true);
-        setLoading(false);
-      });
-  };
-
-  useEffect(() => {
-    loadData();
-    const handleNavClick = (e) => {
-      if (e.detail === '#about') loadData();
-    };
-    window.addEventListener('nav-section-click', handleNavClick);
-    return () => window.removeEventListener('nav-section-click', handleNavClick);
+      .catch(() => {});
   }, []);
 
   return (
@@ -81,10 +61,6 @@ export default function AboutMe() {
           A glimpse into who I am, what drives me, and my academic foundation.
         </p>
       </div>
-
-      {loading || error ? (
-        <SectionStateStatus loading={loading} error={error} onRetry={loadData} />
-      ) : (
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
         
@@ -184,7 +160,6 @@ export default function AboutMe() {
         </motion.div>
 
       </div>
-      )}
     </section>
   );
 }

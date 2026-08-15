@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Camera, X, ZoomIn, Heart, Plus, Sparkles } from 'lucide-react';
+import { Camera, X, ZoomIn, Heart, Plus, Sparkles, Loader2 } from 'lucide-react';
 
 import bharatanatyamImg from '../assets/images/bharatanatyam.jpg';
 import scienceExhibitionImg from '../assets/images/science_exhibition.jpg';
 import collegeAwardImg from '../assets/images/college_award.jpg';
 import currentImg from '../assets/images/current.png';
-import { fetchMemoriesData, createMemoryCard } from '../services/api';
-import SectionStateStatus from './SectionStateStatus';
+import { fetchMemoriesData, createMemoryCard, fetchMemoryById } from '../services/api';
 
 const localImageMap = {
   '/assets/images/bharatanatyam.jpg': bharatanatyamImg,
@@ -22,41 +21,43 @@ const resolveImage = (item) => {
   return item.image_url || currentImg;
 };
 
-export default function MemoryWall() {
-  const initialMemories = [
-    {
-      id: 6,
-      title: 'Classical Bharatanatyam',
-      tag: 'Stage Performance',
-      date: 'Age 5 • Grand Stage',
-      image: bharatanatyamImg,
-      caption: 'Performing classical Bharatanatyam dance on a huge stage at 5 years old in traditional ghungroo & costume!',
-      rotation: '-2deg'
-    },
-    {
-      id: 5,
-      title: 'Science Exhibition Victory',
-      tag: 'Childhood Achievement',
-      date: '3rd Standard',
-      image: scienceExhibitionImg,
-      caption: 'Secured 1st prize in the school-wide science exhibition! Holding my trophy & certificate with pride.',
-      rotation: '2.5deg'
-    },
-    {
-      id: 7,
-      title: 'College Event 1st Prize',
-      tag: 'College Achievement',
-      date: '2nd Sem • ₹3,000 Cash Prize',
-      image: collegeAwardImg,
-      caption: 'Secured 1st place in 2nd semester college event, receiving certificate & ₹3,000 cash prize!',
-      rotation: '-1.5deg'
-    }
-  ];
+const initialMemories = [
+  {
+    id: 1,
+    title: 'Classical Bharatanatyam',
+    tag: 'Stage Performance',
+    date: 'Age 5 • Grand Stage',
+    image: bharatanatyamImg,
+    image_url: '/assets/images/bharatanatyam.jpg',
+    caption: 'Performing classical Bharatanatyam dance on a huge stage at 5 years old in traditional ghungroo & costume!',
+    rotation: '-2deg'
+  },
+  {
+    id: 2,
+    title: 'Science Exhibition Victory',
+    tag: 'Childhood Achievement',
+    date: '3rd Standard',
+    image: scienceExhibitionImg,
+    image_url: '/assets/images/science_exhibition.jpg',
+    caption: 'Secured 1st prize in the school-wide science exhibition! Holding my trophy & certificate with pride.',
+    rotation: '2.5deg'
+  },
+  {
+    id: 3,
+    title: 'College Event 1st Prize',
+    tag: 'College Achievement',
+    date: '2nd Sem • ₹3,000 Cash Prize',
+    image: collegeAwardImg,
+    image_url: '/assets/images/college_award.jpg',
+    caption: 'Secured 1st place in 2nd semester college event, receiving certificate & ₹3,000 cash prize!',
+    rotation: '-1.5deg'
+  }
+];
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+export default function MemoryWall() {
   const [memories, setMemories] = useState(initialMemories);
   const [activeMemory, setActiveMemory] = useState(null);
+  const [detailLoading, setDetailLoading] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
 
   // New photo simulator state
@@ -64,9 +65,7 @@ export default function MemoryWall() {
   const [newCaption, setNewCaption] = useState('');
   const [newTag, setNewTag] = useState('New Memory');
 
-  const loadData = () => {
-    setLoading(true);
-    setError(false);
+  useEffect(() => {
     fetchMemoriesData()
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
@@ -75,23 +74,29 @@ export default function MemoryWall() {
             image: resolveImage(item)
           })));
         }
-        setLoading(false);
       })
-      .catch((err) => {
-        console.error(err);
-        setError(true);
-        setLoading(false);
-      });
-  };
-
-  useEffect(() => {
-    loadData();
-    const handleNavClick = (e) => {
-      if (e.detail === '#memories' || e.detail === '#photos') loadData();
-    };
-    window.addEventListener('nav-section-click', handleNavClick);
-    return () => window.removeEventListener('nav-section-click', handleNavClick);
+      .catch(() => {});
   }, []);
+
+  const handleOpenPhoto = async (item) => {
+    setActiveMemory({ ...item, isFetching: true });
+    setDetailLoading(true);
+
+    try {
+      const fetched = await fetchMemoryById(item.id);
+      if (fetched) {
+        setActiveMemory({
+          ...fetched,
+          image: resolveImage(fetched)
+        });
+      }
+    } catch (err) {
+      console.warn('Error fetching photo detail:', err);
+      setActiveMemory(item);
+    } finally {
+      setDetailLoading(false);
+    }
+  };
 
   const handleAddMemory = async (e) => {
     e.preventDefault();
@@ -133,22 +138,19 @@ export default function MemoryWall() {
           Memory Wall
         </h2>
         <p className="text-[var(--text-muted)] text-sm sm:text-base max-w-xl mx-auto mt-4">
-          An aesthetic photo gallery of childhood curiosity, school days, college milestones, and current moments.
+          Click on any photo card below to fetch photo details and memories directly from PostgreSQL.
         </p>
 
         <button
           onClick={() => setShowAddModal(true)}
-          className="mt-6 px-5 py-2.5 rounded-full border border-[var(--border-accent)] bg-[var(--bg-card)] text-[var(--text-primary)] text-sm font-medium hover:border-[var(--color-primary)] hover:scale-105 transition-all inline-flex items-center gap-2 shadow-sm"
+          className="mt-6 px-5 py-2.5 rounded-full border border-[var(--border-accent)] bg-[var(--bg-card)] text-[var(--text-primary)] text-sm font-medium hover:border-[var(--color-primary)] hover:scale-105 transition-all inline-flex items-center gap-2 shadow-sm cursor-pointer"
         >
           <Plus className="w-4 h-4 text-[var(--color-primary)]" />
           <span>Add Photo Card</span>
         </button>
       </div>
 
-      {loading || error ? (
-        <SectionStateStatus loading={loading} error={error} onRetry={loadData} />
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-2">
         {memories.map((item) => (
           <motion.div
             key={item.id}
@@ -157,42 +159,45 @@ export default function MemoryWall() {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            onClick={() => setActiveMemory(item)}
-            className="polaroid-card cursor-pointer group relative"
+            whileHover={{ scale: 1.03, y: -4 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => handleOpenPhoto(item)}
+            className="journal-paper p-6 flex flex-col justify-between rounded-2xl border border-[var(--border-accent)] hover:border-[var(--color-primary)] shadow-sm hover:shadow-md transition-all cursor-pointer group relative overflow-hidden"
           >
-            {/* Image Container */}
-            <div className="relative overflow-hidden rounded-xl bg-stone-100 aspect-square mb-3">
-              <img
-                src={item.image}
-                alt={item.title}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-              />
-              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
-                <ZoomIn className="w-8 h-8 drop-shadow-md" />
+            <div>
+              <div className="flex items-center justify-between gap-2 mb-4">
+                <span className="stamp-badge text-xs py-1 px-3">
+                  {item.tag}
+                </span>
+                <span className="text-[10px] font-semibold text-[var(--color-accent)] uppercase tracking-wider">
+                  {item.date}
+                </span>
               </div>
-              <span className="absolute top-2 left-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-black/60 text-white backdrop-blur-sm">
-                {item.tag}
-              </span>
-            </div>
 
-            {/* Photo Card Caption */}
-            <div className="text-center px-1">
-              <h3 className="font-heading text-lg font-bold text-[var(--text-primary)] line-clamp-1">
+              <div className="w-14 h-14 rounded-2xl bg-[var(--color-accent-light)] text-[var(--color-primary)] flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-[var(--color-primary)] group-hover:text-[var(--color-cream)] transition-all shadow-xs">
+                <Camera className="w-7 h-7" />
+              </div>
+
+              <h3 className="font-heading text-xl font-bold text-[var(--text-primary)] mb-2 group-hover:text-[var(--color-primary)] transition-colors">
                 {item.title}
               </h3>
-              <p className="text-xs text-[var(--text-muted)] line-clamp-2 leading-relaxed mt-1">
-                "{item.caption}"
+
+              <p className="text-xs text-[var(--text-muted)] mb-5">
+                Photo stored in DB — click button to fetch and view picture.
               </p>
-              <div className="mt-2 text-[10px] uppercase font-semibold text-[var(--color-accent)] tracking-wider">
-                {item.date}
+            </div>
+
+            <div className="pt-3 border-t border-[var(--border-color)]">
+              <div className="w-full py-2.5 px-4 rounded-xl bg-[var(--bg-card-secondary)] text-[var(--color-primary)] text-xs font-bold flex items-center justify-center gap-2 group-hover:bg-[var(--color-primary)] group-hover:text-[var(--color-cream)] transition-all shadow-2xs">
+                <Sparkles className="w-4 h-4 text-amber-500 group-hover:text-amber-300" />
+                <span>Fetch & Display Photo 📸</span>
               </div>
             </div>
           </motion.div>
         ))}
       </div>
-      )}
 
-      {/* Lightbox Modal */}
+      {/* Lightbox Modal with On-Demand DB Fetching */}
       <AnimatePresence>
         {activeMemory && (
           <motion.div
@@ -211,45 +216,57 @@ export default function MemoryWall() {
             >
               <button
                 onClick={() => setActiveMemory(null)}
-                className="absolute top-4 right-4 p-2 rounded-full bg-[var(--bg-card-secondary)] text-[var(--text-primary)] hover:scale-110 transition-transform"
+                className="absolute top-4 right-4 p-2 rounded-full bg-[var(--bg-card-secondary)] text-[var(--text-primary)] hover:scale-110 transition-transform cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
-                <div className="rounded-xl overflow-hidden shadow-md bg-stone-100 max-h-80">
-                  <img
-                    src={activeMemory.image}
-                    alt={activeMemory.title}
-                    className="w-full h-full object-cover"
-                  />
+              {detailLoading ? (
+                <div className="py-16 text-center flex flex-col items-center justify-center gap-3">
+                  <Loader2 className="w-8 h-8 text-[var(--color-primary)] animate-spin" />
+                  <p className="text-sm font-semibold text-[var(--text-muted)]">Fetching photo record & caption from PostgreSQL...</p>
                 </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
+                  <div className="rounded-xl overflow-hidden shadow-md bg-stone-100 max-h-80">
+                    <img
+                      src={activeMemory.image}
+                      alt={activeMemory.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
 
-                <div>
-                  <span className="stamp-badge text-xs py-1 px-3 mb-3 inline-block">
-                    {activeMemory.tag}
-                  </span>
+                  <div>
+                    <span className="stamp-badge text-xs py-1 px-3 mb-3 inline-block">
+                      {activeMemory.tag}
+                    </span>
 
-                  <h3 className="font-heading text-2xl font-bold text-[var(--text-primary)] mb-2">
-                    {activeMemory.title}
-                  </h3>
+                    <h3 className="font-heading text-2xl font-bold text-[var(--text-primary)] mb-2">
+                      {activeMemory.title}
+                    </h3>
 
-                  <p className="text-xs text-[var(--color-accent)] font-semibold mb-4">
-                    {activeMemory.date}
-                  </p>
-
-                  <div className="p-4 rounded-xl bg-[var(--bg-card-secondary)] border border-[var(--border-accent)] mb-4">
-                    <p className="text-sm text-[var(--text-primary)] leading-relaxed">
-                      "{activeMemory.caption}"
+                    <p className="text-xs text-[var(--color-accent)] font-semibold mb-4">
+                      {activeMemory.date}
                     </p>
-                  </div>
 
-                  <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
-                    <Heart className="w-4 h-4 text-rose-500 fill-rose-500" />
-                    <span>Saved in Aditi's Personal Gallery</span>
+                    <div className="p-4 rounded-xl bg-[var(--bg-card-secondary)] border border-[var(--border-accent)] mb-4 shadow-inner">
+                      <p className="text-sm text-[var(--text-primary)] leading-relaxed">
+                        "{activeMemory.caption}"
+                      </p>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
+                      <span className="flex items-center gap-1.5">
+                        <Heart className="w-4 h-4 text-rose-500 fill-rose-500" />
+                        <span>PostgreSQL Image Record</span>
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Sparkles className="w-4 h-4 text-amber-500" /> API Connected
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </motion.div>
           </motion.div>
         )}
@@ -274,7 +291,7 @@ export default function MemoryWall() {
             >
               <button
                 onClick={() => setShowAddModal(false)}
-                className="absolute top-4 right-4 p-2 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                className="absolute top-4 right-4 p-2 text-[var(--text-muted)] hover:text-[var(--text-primary)] cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -335,13 +352,13 @@ export default function MemoryWall() {
                   <button
                     type="button"
                     onClick={() => setShowAddModal(false)}
-                    className="px-4 py-2 rounded-lg text-sm text-[var(--text-muted)] hover:bg-[var(--bg-card-secondary)]"
+                    className="px-4 py-2 rounded-lg text-sm text-[var(--text-muted)] hover:bg-[var(--bg-card-secondary)] cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2 rounded-lg text-sm bg-[var(--color-primary)] text-[var(--color-cream)] font-medium hover:bg-[var(--color-dark-coffee)]"
+                    className="px-5 py-2 rounded-lg text-sm bg-[var(--color-primary)] text-[var(--color-cream)] font-medium hover:bg-[var(--color-dark-coffee)] cursor-pointer"
                   >
                     Pin to Wall
                   </button>

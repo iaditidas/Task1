@@ -246,6 +246,32 @@ router.get('/story', async (req, res) => {
 });
 router.get('/journey', (req, res) => res.redirect('/api/story'));
 
+// GET /api/story/:id
+router.get('/story/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const isConnected = await checkConnection();
+    if (isConnected) {
+      const dbRes = await pool.query('SELECT * FROM story WHERE id = $1', [id]);
+      if (dbRes.rows.length > 0) {
+        return res.json({ success: true, data: dbRes.rows[0], source: 'database' });
+      }
+    }
+    const found = fallbackData.story.find(item => item.id == id);
+    if (found) {
+      return res.json({ success: true, data: found, source: 'fallback' });
+    }
+    res.status(404).json({ success: false, error: 'Story item not found' });
+  } catch (err) {
+    const found = fallbackData.story.find(item => item.id == id);
+    if (found) {
+      return res.json({ success: true, data: found, source: 'fallback' });
+    }
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+router.get('/journey/:id', (req, res) => res.redirect(`/api/story/${req.params.id}`));
+
 // GET /api/education (From 'education' table)
 router.get('/education', async (req, res) => {
   try {
@@ -262,6 +288,31 @@ router.get('/education', async (req, res) => {
   }
 });
 
+// GET /api/education/:id
+router.get('/education/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const isConnected = await checkConnection();
+    if (isConnected) {
+      const dbRes = await pool.query('SELECT * FROM education WHERE id = $1', [id]);
+      if (dbRes.rows.length > 0) {
+        return res.json({ success: true, data: dbRes.rows[0], source: 'database' });
+      }
+    }
+    const found = fallbackData.education.find(item => item.id == id);
+    if (found) {
+      return res.json({ success: true, data: found, source: 'fallback' });
+    }
+    res.status(404).json({ success: false, error: 'Education item not found' });
+  } catch (err) {
+    const found = fallbackData.education.find(item => item.id == id);
+    if (found) {
+      return res.json({ success: true, data: found, source: 'fallback' });
+    }
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // GET /api/hobbies (From 'hobbies' table)
 router.get('/hobbies', async (req, res) => {
   try {
@@ -275,6 +326,31 @@ router.get('/hobbies', async (req, res) => {
     res.json({ success: true, data: fallbackData.hobbies, source: 'fallback' });
   } catch (err) {
     res.json({ success: true, data: fallbackData.hobbies, source: 'fallback' });
+  }
+});
+
+// GET /api/hobbies/:id
+router.get('/hobbies/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const isConnected = await checkConnection();
+    if (isConnected) {
+      const dbRes = await pool.query('SELECT * FROM hobbies WHERE id = $1', [id]);
+      if (dbRes.rows.length > 0) {
+        return res.json({ success: true, data: dbRes.rows[0], source: 'database' });
+      }
+    }
+    const found = fallbackData.hobbies.find(item => item.id == id);
+    if (found) {
+      return res.json({ success: true, data: found, source: 'fallback' });
+    }
+    res.status(404).json({ success: false, error: 'Hobby item not found' });
+  } catch (err) {
+    const found = fallbackData.hobbies.find(item => item.id == id);
+    if (found) {
+      return res.json({ success: true, data: found, source: 'fallback' });
+    }
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
@@ -327,6 +403,32 @@ router.get('/photos', async (req, res) => {
   }
 });
 router.get('/memories', (req, res) => res.redirect('/api/photos'));
+
+// GET /api/photos/:id
+router.get('/photos/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const isConnected = await checkConnection();
+    if (isConnected) {
+      const dbRes = await pool.query('SELECT * FROM photos WHERE id = $1', [id]);
+      if (dbRes.rows.length > 0) {
+        return res.json({ success: true, data: dbRes.rows[0], source: 'database' });
+      }
+    }
+    const found = fallbackData.photos.find(item => item.id == id);
+    if (found) {
+      return res.json({ success: true, data: found, source: 'fallback' });
+    }
+    res.status(404).json({ success: false, error: 'Photo item not found' });
+  } catch (err) {
+    const found = fallbackData.photos.find(item => item.id == id);
+    if (found) {
+      return res.json({ success: true, data: found, source: 'fallback' });
+    }
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+router.get('/memories/:id', (req, res) => res.redirect(`/api/photos/${req.params.id}`));
 
 // POST /api/photos or POST /api/memories (Add new photo card)
 router.post('/photos', async (req, res) => {
