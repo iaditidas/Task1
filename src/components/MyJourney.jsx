@@ -101,8 +101,23 @@ export default function MyJourney() {
           My Journey
         </h2>
         <p className="text-[var(--text-muted)] text-sm sm:text-base max-w-xl mx-auto mt-4">
-          Click on any chapter card below to fetch and unfold its full story from the database.
+          Click on any chapter's "View Story Information" button below to fetch and unfold its full story inline from the database.
         </p>
+
+        <button
+          onClick={async () => {
+            try {
+              const data = await fetchJourneyData();
+              if (Array.isArray(data) && data.length > 0) {
+                setMilestones(data);
+              }
+            } catch (e) {}
+          }}
+          className="mt-6 px-6 py-2.5 rounded-full bg-[var(--color-primary)] text-[var(--color-cream)] text-sm font-semibold hover:bg-[var(--color-dark-coffee)] hover:scale-105 transition-all inline-flex items-center gap-2 shadow-sm cursor-pointer"
+        >
+          <Sparkles className="w-4 h-4 text-amber-300" />
+          <span>View Journey Information</span>
+        </button>
       </div>
 
       <div className="relative">
@@ -113,6 +128,7 @@ export default function MyJourney() {
           {milestones.map((item, idx) => {
             const Icon = iconMap[item.icon_name] || MapPin;
             const isEven = idx % 2 === 0;
+            const isExpanded = activeStory?.id === item.id;
 
             return (
               <motion.div
@@ -125,13 +141,10 @@ export default function MyJourney() {
                   isEven ? 'sm:flex-row-reverse' : ''
                 }`}
               >
-                {/* Interactive Cute Story Card Button */}
+                {/* Interactive Story Card */}
                 <div className="w-full sm:w-1/2 sm:px-8">
                   <motion.div
-                    whileHover={{ scale: 1.02, y: -4 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => handleOpenStory(item)}
-                    className="journal-paper p-6 shadow-sm hover:shadow-lg transition-all rounded-2xl border border-[var(--border-accent)] hover:border-[var(--color-primary)] cursor-pointer group relative overflow-hidden"
+                    className="journal-paper p-6 shadow-sm hover:shadow-lg transition-all rounded-2xl border border-[var(--border-accent)] hover:border-[var(--color-primary)] group relative overflow-hidden"
                   >
                     <div className="flex items-center justify-between gap-2 mb-3">
                       <span className="stamp-badge text-xs py-1 px-3">
@@ -142,19 +155,60 @@ export default function MyJourney() {
                       </span>
                     </div>
 
-                    <h3 className="font-heading text-xl font-bold text-[var(--text-primary)] mb-2 group-hover:text-[var(--color-primary)] transition-colors flex items-center justify-between">
+                    <h3 className="font-heading text-xl font-bold text-[var(--text-primary)] mb-2 flex items-center justify-between">
                       <span>{item.title}</span>
-                      <ChevronRight className="w-5 h-5 text-[var(--color-primary)] opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
                     </h3>
 
                     <p className="text-xs font-semibold text-[var(--color-primary)] mb-4 flex items-center gap-1">
                       <MapPin className="w-3.5 h-3.5 text-rose-500" /> {item.location}
                     </p>
 
-                    <div className="w-full py-2.5 px-4 rounded-xl bg-[var(--bg-card-secondary)] text-[var(--color-primary)] text-xs font-bold flex items-center justify-center gap-2 group-hover:bg-[var(--color-primary)] group-hover:text-[var(--color-cream)] transition-all shadow-2xs">
+                    <button
+                      onClick={() => {
+                        if (isExpanded) {
+                          setActiveStory(null);
+                        } else {
+                          handleOpenStory(item);
+                        }
+                      }}
+                      className="w-full py-2.5 px-4 rounded-xl bg-[var(--bg-card-secondary)] text-[var(--color-primary)] text-xs font-bold flex items-center justify-center gap-2 hover:bg-[var(--color-primary)] hover:text-[var(--color-cream)] transition-all shadow-2xs cursor-pointer"
+                    >
                       <BookOpen className="w-4 h-4" />
-                      <span>Click to Unfold Story ✨</span>
-                    </div>
+                      <span>{isExpanded ? 'Hide Story Details ▲' : 'View Story Information ✨'}</span>
+                    </button>
+
+                    {/* Inline Expanded Story Container */}
+                    <AnimatePresence>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="mt-4 pt-4 border-t border-[var(--border-accent)] overflow-hidden"
+                        >
+                          {detailLoading ? (
+                            <div className="py-6 text-center flex flex-col items-center justify-center gap-2">
+                              <Loader2 className="w-6 h-6 text-[var(--color-primary)] animate-spin" />
+                              <p className="text-xs font-semibold text-[var(--text-muted)]">Fetching story details from API...</p>
+                            </div>
+                          ) : (
+                            <div className="p-4 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-accent)]">
+                              <p className="text-sm text-[var(--text-primary)] leading-relaxed">
+                                {activeStory.description}
+                              </p>
+                              <div className="mt-3 flex items-center justify-between text-[11px] text-[var(--text-muted)]">
+                                <span className="flex items-center gap-1 text-amber-600 font-medium">
+                                  <Sparkles className="w-3.5 h-3.5" /> API Fetched Record
+                                </span>
+                                <span className="font-semibold text-[var(--color-primary)]">
+                                  {activeStory.year} • {activeStory.location}
+                                </span>
+                              </div>
+                            </div>
+                          )}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </motion.div>
                 </div>
 
@@ -170,78 +224,6 @@ export default function MyJourney() {
           })}
         </div>
       </div>
-
-      {/* Cute Story Detail Modal */}
-      <AnimatePresence>
-        {activeStory && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setActiveStory(null)}
-            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
-          >
-            <motion.div
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-[var(--bg-card)] max-w-lg w-full rounded-2xl p-6 sm:p-8 shadow-2xl relative border border-[var(--border-accent)]"
-            >
-              <button
-                onClick={() => setActiveStory(null)}
-                className="absolute top-4 right-4 p-2 rounded-full bg-[var(--bg-card-secondary)] text-[var(--text-primary)] hover:scale-110 transition-transform cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              {detailLoading ? (
-                <div className="py-12 text-center flex flex-col items-center justify-center gap-3">
-                  <Loader2 className="w-8 h-8 text-[var(--color-primary)] animate-spin" />
-                  <p className="text-sm font-semibold text-[var(--text-muted)]">Fetching story details from DB...</p>
-                </div>
-              ) : (
-                <div>
-                  <div className="flex items-center gap-2 mb-4">
-                    <span className="stamp-badge text-xs py-1 px-3">
-                      {activeStory.tag}
-                    </span>
-                    <span className="text-xs font-semibold text-[var(--color-accent)] uppercase tracking-wider">
-                      {activeStory.year}
-                    </span>
-                  </div>
-
-                  <h3 className="font-heading text-2xl font-bold text-[var(--text-primary)] mb-2">
-                    {activeStory.title}
-                  </h3>
-
-                  <p className="text-sm font-semibold text-[var(--color-primary)] mb-5 flex items-center gap-1.5">
-                    <MapPin className="w-4 h-4 text-rose-500" /> {activeStory.location}
-                  </p>
-
-                  <div className="p-5 rounded-xl bg-[var(--bg-card-secondary)] border border-[var(--border-accent)] mb-6 shadow-inner">
-                    <p className="text-sm text-[var(--text-primary)] leading-relaxed opacity-95">
-                      {activeStory.description}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center justify-between text-xs text-[var(--text-muted)] pt-3 border-t border-[var(--border-color)]">
-                    <span className="flex items-center gap-1">
-                      <Sparkles className="w-4 h-4 text-amber-500" /> PostgreSQL API Story
-                    </span>
-                    <button
-                      onClick={() => setActiveStory(null)}
-                      className="px-4 py-1.5 rounded-full bg-[var(--color-primary)] text-[var(--color-cream)] text-xs font-semibold hover:bg-[var(--color-dark-coffee)] cursor-pointer"
-                    >
-                      Close Story
-                    </button>
-                  </div>
-                </div>
-              )}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </section>
   );
 }

@@ -138,139 +138,124 @@ export default function MemoryWall() {
           Memory Wall
         </h2>
         <p className="text-[var(--text-muted)] text-sm sm:text-base max-w-xl mx-auto mt-4">
-          Click on any photo card below to fetch photo details and memories directly from PostgreSQL.
+          Click on any photo's "View Photo Information" button below to fetch and view photo details inline directly on the page.
         </p>
 
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="mt-6 px-5 py-2.5 rounded-full border border-[var(--border-accent)] bg-[var(--bg-card)] text-[var(--text-primary)] text-sm font-medium hover:border-[var(--color-primary)] hover:scale-105 transition-all inline-flex items-center gap-2 shadow-sm cursor-pointer"
-        >
-          <Plus className="w-4 h-4 text-[var(--color-primary)]" />
-          <span>Add Photo Card</span>
-        </button>
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
+          <button
+            onClick={async () => {
+              try {
+                const data = await fetchMemoriesData();
+                if (Array.isArray(data) && data.length > 0) {
+                  setMemories(data.map(item => ({
+                    ...item,
+                    image: resolveImage(item)
+                  })));
+                }
+              } catch (e) {}
+            }}
+            className="px-6 py-2.5 rounded-full bg-[var(--color-primary)] text-[var(--color-cream)] text-sm font-semibold hover:bg-[var(--color-dark-coffee)] hover:scale-105 transition-all inline-flex items-center gap-2 shadow-sm cursor-pointer"
+          >
+            <Sparkles className="w-4 h-4 text-amber-300" />
+            <span>View Memories Information</span>
+          </button>
+
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="px-5 py-2.5 rounded-full border border-[var(--border-accent)] bg-[var(--bg-card)] text-[var(--text-primary)] text-sm font-medium hover:border-[var(--color-primary)] hover:scale-105 transition-all inline-flex items-center gap-2 shadow-sm cursor-pointer"
+          >
+            <Plus className="w-4 h-4 text-[var(--color-primary)]" />
+            <span>Add Photo Card</span>
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-2">
-        {memories.map((item) => (
-          <motion.div
-            key={item.id}
-            layout
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            whileHover={{ scale: 1.03, y: -4 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => handleOpenPhoto(item)}
-            className="journal-paper p-6 flex flex-col justify-between rounded-2xl border border-[var(--border-accent)] hover:border-[var(--color-primary)] shadow-sm hover:shadow-md transition-all cursor-pointer group relative overflow-hidden"
-          >
-            <div>
-              <div className="flex items-center justify-between gap-2 mb-4">
-                <span className="stamp-badge text-xs py-1 px-3">
-                  {item.tag}
-                </span>
-                <span className="text-[10px] font-semibold text-[var(--color-accent)] uppercase tracking-wider">
-                  {item.date}
-                </span>
-              </div>
+        {memories.map((item) => {
+          const isExpanded = activeMemory?.id === item.id;
 
-              <div className="w-14 h-14 rounded-2xl bg-[var(--color-accent-light)] text-[var(--color-primary)] flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-[var(--color-primary)] group-hover:text-[var(--color-cream)] transition-all shadow-xs">
-                <Camera className="w-7 h-7" />
-              </div>
-
-              <h3 className="font-heading text-xl font-bold text-[var(--text-primary)] mb-2 group-hover:text-[var(--color-primary)] transition-colors">
-                {item.title}
-              </h3>
-
-              <p className="text-xs text-[var(--text-muted)] mb-5">
-                Photo stored in DB — click button to fetch and view picture.
-              </p>
-            </div>
-
-            <div className="pt-3 border-t border-[var(--border-color)]">
-              <div className="w-full py-2.5 px-4 rounded-xl bg-[var(--bg-card-secondary)] text-[var(--color-primary)] text-xs font-bold flex items-center justify-center gap-2 group-hover:bg-[var(--color-primary)] group-hover:text-[var(--color-cream)] transition-all shadow-2xs">
-                <Sparkles className="w-4 h-4 text-amber-500 group-hover:text-amber-300" />
-                <span>Fetch & Display Photo 📸</span>
-              </div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Lightbox Modal with On-Demand DB Fetching */}
-      <AnimatePresence>
-        {activeMemory && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setActiveMemory(null)}
-            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6"
-          >
+          return (
             <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-[var(--bg-card)] max-w-2xl w-full rounded-2xl p-6 sm:p-8 shadow-2xl relative border border-[var(--border-accent)]"
+              key={item.id}
+              layout
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="journal-paper p-6 flex flex-col justify-between rounded-2xl border border-[var(--border-accent)] hover:border-[var(--color-primary)] shadow-sm hover:shadow-md transition-all group relative overflow-hidden"
             >
-              <button
-                onClick={() => setActiveMemory(null)}
-                className="absolute top-4 right-4 p-2 rounded-full bg-[var(--bg-card-secondary)] text-[var(--text-primary)] hover:scale-110 transition-transform cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              {detailLoading ? (
-                <div className="py-16 text-center flex flex-col items-center justify-center gap-3">
-                  <Loader2 className="w-8 h-8 text-[var(--color-primary)] animate-spin" />
-                  <p className="text-sm font-semibold text-[var(--text-muted)]">Fetching photo record & caption from PostgreSQL...</p>
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-4">
+                  <span className="stamp-badge text-xs py-1 px-3">
+                    {item.tag}
+                  </span>
+                  <span className="text-[10px] font-semibold text-[var(--color-accent)] uppercase tracking-wider">
+                    {item.date}
+                  </span>
                 </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
-                  <div className="rounded-xl overflow-hidden shadow-md bg-stone-100 max-h-80">
-                    <img
-                      src={activeMemory.image}
-                      alt={activeMemory.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
 
-                  <div>
-                    <span className="stamp-badge text-xs py-1 px-3 mb-3 inline-block">
-                      {activeMemory.tag}
-                    </span>
-
-                    <h3 className="font-heading text-2xl font-bold text-[var(--text-primary)] mb-2">
-                      {activeMemory.title}
-                    </h3>
-
-                    <p className="text-xs text-[var(--color-accent)] font-semibold mb-4">
-                      {activeMemory.date}
-                    </p>
-
-                    <div className="p-4 rounded-xl bg-[var(--bg-card-secondary)] border border-[var(--border-accent)] mb-4 shadow-inner">
-                      <p className="text-sm text-[var(--text-primary)] leading-relaxed">
-                        "{activeMemory.caption}"
-                      </p>
-                    </div>
-
-                    <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
-                      <span className="flex items-center gap-1.5">
-                        <Heart className="w-4 h-4 text-rose-500 fill-rose-500" />
-                        <span>PostgreSQL Image Record</span>
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Sparkles className="w-4 h-4 text-amber-500" /> API Connected
-                      </span>
-                    </div>
-                  </div>
+                <div className="w-14 h-14 rounded-2xl bg-[var(--color-accent-light)] text-[var(--color-primary)] flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-[var(--color-primary)] group-hover:text-[var(--color-cream)] transition-all shadow-xs">
+                  <Camera className="w-7 h-7" />
                 </div>
-              )}
+
+                <h3 className="font-heading text-xl font-bold text-[var(--text-primary)] mb-2 group-hover:text-[var(--color-primary)] transition-colors">
+                  {item.title}
+                </h3>
+              </div>
+
+              <div>
+                <button
+                  onClick={() => {
+                    if (isExpanded) {
+                      setActiveMemory(null);
+                    } else {
+                      handleOpenPhoto(item);
+                    }
+                  }}
+                  className="w-full py-2.5 px-4 rounded-xl bg-[var(--bg-card-secondary)] text-[var(--color-primary)] text-xs font-bold flex items-center justify-center gap-2 hover:bg-[var(--color-primary)] hover:text-[var(--color-cream)] transition-all shadow-2xs cursor-pointer"
+                >
+                  <Sparkles className="w-4 h-4 text-amber-500" />
+                  <span>{isExpanded ? 'Hide Photo Details ▲' : 'View Photo Information 📸'}</span>
+                </button>
+
+                {/* Inline Expanded Photo Details */}
+                <AnimatePresence>
+                  {isExpanded && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="mt-4 pt-4 border-t border-[var(--border-accent)] overflow-hidden"
+                    >
+                      {detailLoading ? (
+                        <div className="py-6 text-center flex flex-col items-center justify-center gap-2">
+                          <Loader2 className="w-6 h-6 text-[var(--color-primary)] animate-spin" />
+                          <p className="text-xs font-semibold text-[var(--text-muted)]">Fetching photo record from API...</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          <div className="rounded-xl overflow-hidden shadow-sm aspect-video bg-stone-100">
+                            <img
+                              src={activeMemory.image}
+                              alt={activeMemory.title}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="p-3 rounded-xl bg-[var(--bg-card-secondary)] border border-[var(--border-accent)]">
+                            <p className="text-xs text-[var(--text-primary)] leading-relaxed italic">
+                              "{activeMemory.caption}"
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          );
+        })}
+      </div>
 
       {/* Add Custom Note Simulator Modal */}
       <AnimatePresence>

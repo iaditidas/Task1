@@ -83,151 +83,128 @@ export default function Education() {
           Education
         </h2>
         <p className="text-[var(--text-muted)] text-sm sm:text-base max-w-xl mx-auto mt-4">
-          Click on any academic institution below to fetch its complete record from the database.
+          Click on any academic institution's "View Academic Information" button below to fetch its complete record inline from the database.
         </p>
+
+        <button
+          onClick={async () => {
+            try {
+              const data = await fetchEducationData();
+              if (Array.isArray(data) && data.length > 0) {
+                setEdList(data);
+              }
+            } catch (e) {}
+          }}
+          className="mt-6 px-6 py-2.5 rounded-full bg-[var(--color-primary)] text-[var(--color-cream)] text-sm font-semibold hover:bg-[var(--color-dark-coffee)] hover:scale-105 transition-all inline-flex items-center gap-2 shadow-sm cursor-pointer"
+        >
+          <Sparkles className="w-4 h-4 text-amber-300" />
+          <span>View Education Information</span>
+        </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {edList.map((item, idx) => (
-          <motion.div
-            key={item.id || item.institution}
-            initial={{ opacity: 0, y: 25 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: idx * 0.15 }}
-            whileHover={{ scale: 1.02, y: -4 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => handleOpenEducation(item)}
-            className={`journal-paper p-6 sm:p-7 flex flex-col justify-between rounded-2xl relative transition-all duration-300 hover:shadow-lg cursor-pointer group ${
-              item.highlight
-                ? 'border-2 border-[var(--color-primary)] shadow-md bg-[var(--bg-card)]'
-                : 'border border-[var(--border-accent)] bg-[var(--bg-card)]'
-            }`}
-          >
-            {item.highlight && (
-              <div className="absolute -top-3.5 right-6 px-3 py-1 bg-[var(--color-primary)] text-[var(--color-cream)] text-xs font-semibold tracking-wider rounded-full shadow-sm flex items-center gap-1">
-                <Star className="w-3.5 h-3.5 text-amber-300 fill-amber-300" /> Active Degree
-              </div>
-            )}
+        {edList.map((item, idx) => {
+          const isExpanded = activeEd?.id === item.id;
 
-            <div>
-              <div className="p-3 rounded-full bg-[var(--color-accent-light)] text-[var(--color-primary)] w-fit mb-5 group-hover:scale-110 transition-transform">
-                <GraduationCap className="w-6 h-6" />
-              </div>
-
-              <h3 className="font-heading text-2xl font-bold text-[var(--text-primary)] mb-1 group-hover:text-[var(--color-primary)] transition-colors flex items-center justify-between">
-                <span>{item.institution}</span>
-                <ChevronRight className="w-5 h-5 text-[var(--color-primary)] opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-              </h3>
-
-              <p className="text-sm font-semibold text-[var(--color-primary)] mb-3">
-                {item.degree} — <span className="font-normal text-[var(--text-muted)]">{item.field}</span>
-              </p>
-
-              <span className="inline-block text-xs font-medium py-1 px-2.5 rounded-md bg-[var(--bg-card-secondary)] text-[var(--text-muted)] mb-5">
-                {item.status || 'Academic Program'}
-              </span>
-            </div>
-
-            <div className="pt-4 border-t border-[var(--border-color)]">
-              <div className="w-full py-2.5 px-4 rounded-xl bg-[var(--bg-card-secondary)] text-[var(--color-primary)] text-xs font-bold flex items-center justify-center gap-2 group-hover:bg-[var(--color-primary)] group-hover:text-[var(--color-cream)] transition-all shadow-2xs">
-                <BookOpen className="w-4 h-4" />
-                <span>Click for Full Academic Details 🎓</span>
-              </div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Cute Education Detail Modal */}
-      <AnimatePresence>
-        {activeEd && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setActiveEd(null)}
-            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
-          >
+          return (
             <motion.div
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-[var(--bg-card)] max-w-lg w-full rounded-2xl p-6 sm:p-8 shadow-2xl relative border border-[var(--border-accent)]"
+              key={item.id || item.institution}
+              initial={{ opacity: 0, y: 25 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: idx * 0.15 }}
+              className={`journal-paper p-6 sm:p-7 flex flex-col justify-between rounded-2xl relative transition-all duration-300 hover:shadow-lg group ${
+                item.highlight
+                  ? 'border-2 border-[var(--color-primary)] shadow-md bg-[var(--bg-card)]'
+                  : 'border border-[var(--border-accent)] bg-[var(--bg-card)]'
+              }`}
             >
-              <button
-                onClick={() => setActiveEd(null)}
-                className="absolute top-4 right-4 p-2 rounded-full bg-[var(--bg-card-secondary)] text-[var(--text-primary)] hover:scale-110 transition-transform cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              {detailLoading ? (
-                <div className="py-12 text-center flex flex-col items-center justify-center gap-3">
-                  <Loader2 className="w-8 h-8 text-[var(--color-primary)] animate-spin" />
-                  <p className="text-sm font-semibold text-[var(--text-muted)]">Fetching education record from DB...</p>
-                </div>
-              ) : (
-                <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="p-2.5 rounded-xl bg-[var(--color-accent-light)] text-[var(--color-primary)]">
-                      <GraduationCap className="w-5 h-5" />
-                    </span>
-                    <span className="stamp-badge text-xs py-1 px-3">
-                      {activeEd.status || 'Academic Record'}
-                    </span>
-                  </div>
-
-                  <h3 className="font-heading text-2xl font-bold text-[var(--text-primary)] mb-1">
-                    {activeEd.institution}
-                  </h3>
-
-                  <p className="text-sm font-semibold text-[var(--color-primary)] mb-4">
-                    {activeEd.degree} — <span className="font-normal text-[var(--text-muted)]">{activeEd.field}</span>
-                  </p>
-
-                  <div className="p-4 rounded-xl bg-[var(--bg-card-secondary)] border border-[var(--border-accent)] space-y-3 mb-6 shadow-inner">
-                    <p className="text-sm text-[var(--text-primary)] leading-relaxed">
-                      {activeEd.details}
-                    </p>
-
-                    <div className="pt-3 border-t border-[var(--border-color)] flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--text-muted)] font-medium">
-                      <span className="flex items-center gap-1.5">
-                        <BookOpen className="w-4 h-4 text-[var(--color-primary)]" /> {activeEd.semester}
-                      </span>
-                      <span className="flex items-center gap-1.5">
-                        <Calendar className="w-4 h-4 text-[var(--color-primary)]" /> Grad: {activeEd.graduation}
-                      </span>
-                    </div>
-
-                    {activeEd.cgpa && (
-                      <div className="p-2.5 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-accent)] flex items-center justify-between">
-                        <span className="text-xs font-semibold uppercase text-[var(--text-muted)]">Grade / CGPA</span>
-                        <span className="font-heading font-bold text-base text-[var(--color-primary)] flex items-center gap-1">
-                          <Award className="w-4 h-4 text-amber-600" /> {activeEd.cgpa}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex items-center justify-between text-xs text-[var(--text-muted)] pt-2 border-t border-[var(--border-color)]">
-                    <span className="flex items-center gap-1">
-                      <Sparkles className="w-4 h-4 text-amber-500" /> PostgreSQL API Record
-                    </span>
-                    <button
-                      onClick={() => setActiveEd(null)}
-                      className="px-4 py-1.5 rounded-full bg-[var(--color-primary)] text-[var(--color-cream)] text-xs font-semibold hover:bg-[var(--color-dark-coffee)] cursor-pointer"
-                    >
-                      Close Details
-                    </button>
-                  </div>
+              {item.highlight && (
+                <div className="absolute -top-3.5 right-6 px-3 py-1 bg-[var(--color-primary)] text-[var(--color-cream)] text-xs font-semibold tracking-wider rounded-full shadow-sm flex items-center gap-1">
+                  <Star className="w-3.5 h-3.5 text-amber-300 fill-amber-300" /> Active Degree
                 </div>
               )}
+
+              <div>
+                <div className="p-3 rounded-full bg-[var(--color-accent-light)] text-[var(--color-primary)] w-fit mb-5 group-hover:scale-110 transition-transform">
+                  <GraduationCap className="w-6 h-6" />
+                </div>
+
+                <h3 className="font-heading text-2xl font-bold text-[var(--text-primary)] mb-1">
+                  {item.institution}
+                </h3>
+
+                <p className="text-sm font-semibold text-[var(--color-primary)] mb-3">
+                  {item.degree} — <span className="font-normal text-[var(--text-muted)]">{item.field}</span>
+                </p>
+
+                <span className="inline-block text-xs font-medium py-1 px-2.5 rounded-md bg-[var(--bg-card-secondary)] text-[var(--text-muted)] mb-5">
+                  {item.status || 'Academic Program'}
+                </span>
+              </div>
+
+              <div>
+                <button
+                  onClick={() => {
+                    if (isExpanded) {
+                      setActiveEd(null);
+                    } else {
+                      handleOpenEducation(item);
+                    }
+                  }}
+                  className="w-full py-2.5 px-4 rounded-xl bg-[var(--bg-card-secondary)] text-[var(--color-primary)] text-xs font-bold flex items-center justify-center gap-2 hover:bg-[var(--color-primary)] hover:text-[var(--color-cream)] transition-all shadow-2xs cursor-pointer"
+                >
+                  <BookOpen className="w-4 h-4" />
+                  <span>{isExpanded ? 'Hide Academic Details ▲' : 'View Academic Information 🎓'}</span>
+                </button>
+
+                {/* Inline Expanded Education Details */}
+                <AnimatePresence>
+                  {isExpanded && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="mt-4 pt-4 border-t border-[var(--border-accent)] overflow-hidden"
+                    >
+                      {detailLoading ? (
+                        <div className="py-6 text-center flex flex-col items-center justify-center gap-2">
+                          <Loader2 className="w-6 h-6 text-[var(--color-primary)] animate-spin" />
+                          <p className="text-xs font-semibold text-[var(--text-muted)]">Fetching education record from API...</p>
+                        </div>
+                      ) : (
+                        <div className="p-4 rounded-xl bg-[var(--bg-card-secondary)] border border-[var(--border-accent)] space-y-3">
+                          <p className="text-xs text-[var(--text-primary)] leading-relaxed">
+                            {activeEd.details}
+                          </p>
+
+                          <div className="pt-2 border-t border-[var(--border-color)] flex flex-wrap items-center justify-between gap-1 text-[11px] text-[var(--text-muted)]">
+                            <span className="flex items-center gap-1 font-medium">
+                              <BookOpen className="w-3.5 h-3.5 text-[var(--color-primary)]" /> {activeEd.semester}
+                            </span>
+                            <span className="flex items-center gap-1 font-medium">
+                              <Calendar className="w-3.5 h-3.5 text-[var(--color-primary)]" /> Grad: {activeEd.graduation}
+                            </span>
+                          </div>
+
+                          {activeEd.cgpa && (
+                            <div className="p-2 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-accent)] flex items-center justify-between">
+                              <span className="text-[10px] font-semibold uppercase text-[var(--text-muted)]">Grade / CGPA</span>
+                              <span className="font-heading font-bold text-xs text-[var(--color-primary)] flex items-center gap-1">
+                                <Award className="w-3.5 h-3.5 text-amber-600" /> {activeEd.cgpa}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          );
+        })}
+      </div>
     </section>
   );
 }

@@ -97,6 +97,24 @@ export default function Contact() {
         <p className="text-[var(--text-muted)] text-sm sm:text-base max-w-xl mx-auto mt-4">
           Whether you want to discuss AI, collaborate on projects, or simply connect and chat — my inbox is always open!
         </p>
+
+        <button
+          onClick={async () => {
+            try {
+              const data = await fetchContactData();
+              if (data && Array.isArray(data.items)) {
+                setContactItems(data.items.map(item => ({
+                  ...item,
+                  icon: iconMap[item.id] || Mail
+                })));
+              }
+            } catch (e) {}
+          }}
+          className="mt-6 px-6 py-2.5 rounded-full bg-[var(--color-primary)] text-[var(--color-cream)] text-sm font-semibold hover:bg-[var(--color-dark-coffee)] hover:scale-105 transition-all inline-flex items-center gap-2 shadow-sm cursor-pointer"
+        >
+          <Sparkles className="w-4 h-4 text-amber-300" />
+          <span>View Contact Information</span>
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">

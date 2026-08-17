@@ -132,16 +132,31 @@ export default function Hero() {
           </div>
         </motion.div>
 
-        {/* CTA Buttons */}
+        {/* CTA Buttons & View Section Button */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.6 }}
           className="flex flex-col sm:flex-row items-center gap-4"
         >
+          <button
+            onClick={async () => {
+              try {
+                const data = await fetchHeroData();
+                if (data) {
+                  setHeroData((prev) => ({ ...prev, ...data }));
+                }
+              } catch (e) {}
+            }}
+            className="px-8 py-3.5 rounded-full bg-[var(--color-primary)] text-[var(--color-cream)] font-semibold hover:bg-[var(--color-dark-coffee)] hover:scale-105 transition-all shadow-md flex items-center gap-2 cursor-pointer"
+          >
+            <Sparkles className="w-4 h-4 text-amber-300" />
+            <span>View Hero Information</span>
+          </button>
+
           <a
             href="#journey"
-            className="px-8 py-3.5 rounded-full bg-[var(--color-primary)] text-[var(--color-cream)] font-medium hover:bg-[var(--color-dark-coffee)] hover:scale-105 transition-all shadow-md flex items-center gap-2 text-decoration-none"
+            className="px-8 py-3.5 rounded-full border border-[var(--border-accent)] bg-[var(--bg-card)] text-[var(--text-primary)] font-medium hover:border-[var(--color-primary)] hover:scale-105 transition-all flex items-center gap-2 text-decoration-none"
           >
             <span>Explore My Journey</span>
             <ArrowDown className="w-4 h-4 animate-bounce" />

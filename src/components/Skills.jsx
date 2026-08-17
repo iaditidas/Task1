@@ -50,6 +50,21 @@ export default function Skills() {
         <p className="text-[var(--text-muted)] text-sm sm:text-base max-w-xl mx-auto mt-4">
           Technologies, frameworks, and tools I use to build digital solutions.
         </p>
+
+        <button
+          onClick={async () => {
+            try {
+              const data = await fetchSkillsData();
+              if (Array.isArray(data) && data.length > 0) {
+                setSkillData(data);
+              }
+            } catch (e) {}
+          }}
+          className="mt-6 px-6 py-2.5 rounded-full bg-[var(--color-primary)] text-[var(--color-cream)] text-sm font-semibold hover:bg-[var(--color-dark-coffee)] hover:scale-105 transition-all inline-flex items-center gap-2 shadow-sm cursor-pointer"
+        >
+          <Sparkles className="w-4 h-4 text-amber-300" />
+          <span>View Skills Information</span>
+        </button>
       </div>
 
       {/* Filter Category Tabs */}

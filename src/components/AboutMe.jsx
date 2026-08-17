@@ -60,6 +60,29 @@ export default function AboutMe() {
         <p className="text-[var(--text-muted)] text-sm sm:text-base max-w-xl mx-auto mt-4">
           A glimpse into who I am, what drives me, and my academic foundation.
         </p>
+
+        <button
+          onClick={async () => {
+            try {
+              const data = await fetchAboutData();
+              if (data) {
+                setAboutData((prev) => ({
+                  profile_name: data.profile_name || prev.profile_name,
+                  subtitle: data.subtitle || prev.subtitle,
+                  story_heading: data.story_heading || prev.story_heading,
+                  story_paragraph1: data.story_paragraph1 || prev.story_paragraph1,
+                  story_paragraph2: data.story_paragraph2 || prev.story_paragraph2,
+                  personality_note: data.personality_note || prev.personality_note,
+                  stats: Array.isArray(data.stats) && data.stats.length > 0 ? data.stats : prev.stats
+                }));
+              }
+            } catch (err) {}
+          }}
+          className="mt-6 px-6 py-2.5 rounded-full bg-[var(--color-primary)] text-[var(--color-cream)] text-sm font-semibold hover:bg-[var(--color-dark-coffee)] hover:scale-105 transition-all inline-flex items-center gap-2 shadow-sm cursor-pointer"
+        >
+          <Sparkles className="w-4 h-4 text-amber-300" />
+          <span>View About Information</span>
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
