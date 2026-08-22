@@ -17,6 +17,7 @@ const iconMap = {
 };
 
 export default function Contact() {
+  const [isExpanded, setIsExpanded] = useState(false);
   const [copiedField, setCopiedField] = useState(null);
   const [messageSent, setMessageSent] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', note: '' });
@@ -59,7 +60,30 @@ export default function Contact() {
         })));
       }
     });
+
+    const handleNavClick = (e) => {
+      if (e.detail === '#contact') {
+        setIsExpanded(true);
+      }
+    };
+    window.addEventListener('nav-section-click', handleNavClick);
+    return () => window.removeEventListener('nav-section-click', handleNavClick);
   }, []);
+
+  const handleToggle = async () => {
+    if (!isExpanded) {
+      try {
+        const data = await fetchContactData();
+        if (data && Array.isArray(data.items)) {
+          setContactItems(data.items.map(item => ({
+            ...item,
+            icon: iconMap[item.id] || Mail
+          })));
+        }
+      } catch (e) {}
+    }
+    setIsExpanded(!isExpanded);
+  };
 
   const handleCopy = (text, fieldId) => {
     navigator.clipboard.writeText(text);
@@ -87,9 +111,9 @@ export default function Contact() {
 
   return (
     <section id="contact" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-      <div className="text-center mb-16">
+      <div className="text-center mb-10">
         <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-accent)]">
-          Chapter 07
+          Chapter 08
         </span>
         <h2 className="font-heading text-4xl sm:text-5xl font-bold text-[var(--text-primary)] mt-1 section-title">
           Let's Connect
@@ -99,190 +123,181 @@ export default function Contact() {
         </p>
 
         <button
-          onClick={async () => {
-            try {
-              const data = await fetchContactData();
-              if (data && Array.isArray(data.items)) {
-                setContactItems(data.items.map(item => ({
-                  ...item,
-                  icon: iconMap[item.id] || Mail
-                })));
-              }
-            } catch (e) {}
-          }}
-          className="mt-6 px-6 py-2.5 rounded-full bg-[var(--color-primary)] text-[var(--color-cream)] text-sm font-semibold hover:bg-[var(--color-dark-coffee)] hover:scale-105 transition-all inline-flex items-center gap-2 shadow-sm cursor-pointer"
+          onClick={handleToggle}
+          className="mt-6 px-8 py-3.5 rounded-full bg-[var(--color-primary)] text-[var(--color-cream)] font-bold text-sm hover:bg-[var(--color-dark-coffee)] hover:scale-105 transition-all inline-flex items-center gap-2.5 shadow-md cursor-pointer"
         >
           <Sparkles className="w-4 h-4 text-amber-300" />
-          <span>View Contact Information</span>
+          <span>{isExpanded ? 'Hide Contact Information ▲' : 'View Contact Information ✨'}</span>
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-        
-        {/* Left Column: Direct Contact Cards & Quick Copy */}
-        <motion.div
-          initial={{ opacity: 0, x: -30 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="lg:col-span-5 flex flex-col gap-6"
-        >
-          <div className="journal-paper p-6 sm:p-8 rounded-2xl border border-[var(--border-accent)] shadow-sm space-y-6">
-            <h3 className="font-heading text-2xl font-bold text-[var(--text-primary)] flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-[var(--color-primary)]" /> Contact Information
-            </h3>
+      {/* Collapsible Content */}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.5 }}
+            className="overflow-hidden pt-4"
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+              
+              {/* Left Column: Direct Contact Cards & Quick Copy */}
+              <div className="lg:col-span-5 flex flex-col gap-6">
+                <div className="journal-paper p-6 sm:p-8 rounded-2xl border border-[var(--border-accent)] shadow-sm space-y-6">
+                  <h3 className="font-heading text-2xl font-bold text-[var(--text-primary)] flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-[var(--color-primary)]" /> Contact Information
+                  </h3>
 
-            {contactItems.map((item) => {
-              const Icon = item.icon;
-              const isCopied = copiedField === item.id;
+                  {contactItems.map((item) => {
+                    const Icon = item.icon;
+                    const isCopied = copiedField === item.id;
 
-              return (
-                <div
-                  key={item.id}
-                  className="p-4 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] flex items-center justify-between hover:border-[var(--color-primary)] transition-all group"
-                >
-                  <a
-                    href={item.action}
-                    target={item.id === 'github' ? '_blank' : '_self'}
-                    rel="noreferrer"
-                    className="flex items-center gap-3.5 text-decoration-none min-w-0"
-                  >
-                    <div className="p-3 rounded-full bg-[var(--color-accent-light)] text-[var(--color-primary)] group-hover:scale-110 transition-transform flex items-center justify-center">
-                      <Icon className="w-5 h-5" />
+                    return (
+                      <div
+                        key={item.id}
+                        className="p-4 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] flex items-center justify-between hover:border-[var(--color-primary)] transition-all group"
+                      >
+                        <a
+                          href={item.action}
+                          target={item.id === 'github' ? '_blank' : '_self'}
+                          rel="noreferrer"
+                          className="flex items-center gap-3.5 text-decoration-none min-w-0"
+                        >
+                          <div className="p-3 rounded-full bg-[var(--color-accent-light)] text-[var(--color-primary)] group-hover:scale-110 transition-transform flex items-center justify-center">
+                            <Icon className="w-5 h-5" />
+                          </div>
+                          <div className="min-w-0">
+                            <span className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider block">
+                              {item.label}
+                            </span>
+                            <span className="font-medium text-sm sm:text-base text-[var(--text-primary)] group-hover:text-[var(--color-primary)] transition-colors truncate block">
+                              {item.value}
+                            </span>
+                          </div>
+                        </a>
+
+                        {item.copyable && (
+                          <button
+                            onClick={() => handleCopy(item.value, item.id)}
+                            aria-label={`Copy ${item.label}`}
+                            className="p-2 rounded-lg text-[var(--text-muted)] hover:text-[var(--color-primary)] hover:bg-[var(--bg-card-secondary)] transition-all relative"
+                          >
+                            {isCopied ? (
+                              <Check className="w-4 h-4 text-emerald-600" />
+                            ) : (
+                              <Copy className="w-4 h-4" />
+                            )}
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+
+                  {/* Quick Toast Notification when copied */}
+                  <AnimatePresence>
+                    {copiedField && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        className="p-3 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-semibold text-center border border-emerald-300 flex items-center justify-center gap-2"
+                      >
+                        <Sparkles className="w-4 h-4" /> Copied to clipboard!
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+
+              {/* Right Column: Message Form */}
+              <div className="lg:col-span-7">
+                <div className="bg-[var(--bg-card)] p-6 sm:p-8 rounded-2xl border border-[var(--border-accent)] shadow-md relative">
+                  <h3 className="font-heading text-2xl font-bold text-[var(--text-primary)] mb-1 flex items-center gap-2">
+                    <Heart className="w-5 h-5 text-rose-500 fill-rose-500" /> Leave a Note
+                  </h3>
+                  <p className="text-xs text-[var(--text-muted)] mb-6">
+                    Send a quick message or note to Aditi's portfolio inbox.
+                  </p>
+
+                  <form onSubmit={handleSubmitNote} className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-[var(--text-primary)] mb-1.5">
+                          Your Name *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          placeholder="e.g. Professor / Friend"
+                          className="w-full px-4 py-3 text-sm rounded-xl border border-[var(--border-accent)] bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--color-primary)] transition-all"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-[var(--text-primary)] mb-1.5">
+                          Your Email (Optional)
+                        </label>
+                        <input
+                          type="email"
+                          value={formData.email}
+                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                          placeholder="name@example.com"
+                          className="w-full px-4 py-3 text-sm rounded-xl border border-[var(--border-accent)] bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--color-primary)] transition-all"
+                        />
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <span className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider block">
-                        {item.label}
-                      </span>
-                      <span className="font-medium text-sm sm:text-base text-[var(--text-primary)] group-hover:text-[var(--color-primary)] transition-colors truncate block">
-                        {item.value}
-                      </span>
-                    </div>
-                  </a>
 
-                  {item.copyable && (
+                    <div>
+                      <label className="block text-xs font-semibold text-[var(--text-primary)] mb-1.5">
+                        Your Note or Message *
+                      </label>
+                      <textarea
+                        rows="4"
+                        required
+                        value={formData.note}
+                        onChange={(e) => setFormData({ ...formData, note: e.target.value })}
+                        placeholder="Share a message, feedback, or project idea..."
+                        className="w-full px-4 py-3 text-sm rounded-xl border border-[var(--border-accent)] bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--color-primary)] transition-all"
+                      />
+                    </div>
+
                     <button
-                      onClick={() => handleCopy(item.value, item.id)}
-                      aria-label={`Copy ${item.label}`}
-                      className="p-2 rounded-lg text-[var(--text-muted)] hover:text-[var(--color-primary)] hover:bg-[var(--bg-card-secondary)] transition-all relative"
+                      type="submit"
+                      className="w-full py-3.5 px-6 rounded-xl bg-[var(--color-primary)] text-[var(--color-cream)] font-medium hover:bg-[var(--color-dark-coffee)] hover:scale-[1.01] transition-all flex items-center justify-center gap-2 shadow-md"
                     >
-                      {isCopied ? (
-                        <Check className="w-4 h-4 text-emerald-600" />
-                      ) : (
-                        <Copy className="w-4 h-4" />
-                      )}
+                      <Send className="w-4 h-4" />
+                      <span>Send Note</span>
                     </button>
-                  )}
-                </div>
-              );
-            })}
+                  </form>
 
-            {/* Quick Toast Notification when copied */}
-            <AnimatePresence>
-              {copiedField && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="p-3 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-semibold text-center border border-emerald-300 flex items-center justify-center gap-2"
-                >
-                  <Sparkles className="w-4 h-4" /> Copied to clipboard!
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </motion.div>
-
-        {/* Right Column: Message Form */}
-        <motion.div
-          initial={{ opacity: 0, x: 30 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="lg:col-span-7"
-        >
-          <div className="bg-[var(--bg-card)] p-6 sm:p-8 rounded-2xl border border-[var(--border-accent)] shadow-md relative">
-            <h3 className="font-heading text-2xl font-bold text-[var(--text-primary)] mb-1 flex items-center gap-2">
-              <Heart className="w-5 h-5 text-rose-500 fill-rose-500" /> Leave a Note
-            </h3>
-            <p className="text-xs text-[var(--text-muted)] mb-6">
-              Send a quick message or note to Aditi's portfolio inbox.
-            </p>
-
-            <form onSubmit={handleSubmitNote} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-[var(--text-primary)] mb-1.5">
-                    Your Name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="e.g. Professor / Friend"
-                    className="w-full px-4 py-3 text-sm rounded-xl border border-[var(--border-accent)] bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--color-primary)] transition-all"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-[var(--text-primary)] mb-1.5">
-                    Your Email (Optional)
-                  </label>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="name@example.com"
-                    className="w-full px-4 py-3 text-sm rounded-xl border border-[var(--border-accent)] bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--color-primary)] transition-all"
-                  />
+                  <AnimatePresence>
+                    {messageSent && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="mt-4 p-4 rounded-xl bg-[var(--bg-card-secondary)] border border-[var(--border-accent)] text-center"
+                      >
+                        <p className="font-heading text-lg text-[var(--color-primary)] font-bold mb-1">
+                          🎉 Note delivered successfully!
+                        </p>
+                        <p className="text-xs text-[var(--text-muted)]">
+                          Thank you for taking the time to send a message. Have a wonderful day!
+                        </p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-[var(--text-primary)] mb-1.5">
-                  Your Note or Message *
-                </label>
-                <textarea
-                  rows="4"
-                  required
-                  value={formData.note}
-                  onChange={(e) => setFormData({ ...formData, note: e.target.value })}
-                  placeholder="Share a message, feedback, or project idea..."
-                  className="w-full px-4 py-3 text-sm rounded-xl border border-[var(--border-accent)] bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--color-primary)] transition-all"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full py-3.5 px-6 rounded-xl bg-[var(--color-primary)] text-[var(--color-cream)] font-medium hover:bg-[var(--color-dark-coffee)] hover:scale-[1.01] transition-all flex items-center justify-center gap-2 shadow-md"
-              >
-                <Send className="w-4 h-4" />
-                <span>Send Note</span>
-              </button>
-            </form>
-
-            <AnimatePresence>
-              {messageSent && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  className="mt-4 p-4 rounded-xl bg-[var(--bg-card-secondary)] border border-[var(--border-accent)] text-center"
-                >
-                  <p className="font-heading text-lg text-[var(--color-primary)] font-bold mb-1">
-                    🎉 Note delivered successfully!
-                  </p>
-                  <p className="text-xs text-[var(--text-muted)]">
-                    Thank you for taking the time to send a message. Have a wonderful day!
-                  </p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </motion.div>
-
-      </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

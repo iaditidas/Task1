@@ -55,6 +55,7 @@ const initialMemories = [
 ];
 
 export default function MemoryWall() {
+  const [isExpanded, setIsExpanded] = useState(false);
   const [memories, setMemories] = useState(initialMemories);
   const [activeMemory, setActiveMemory] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -76,7 +77,30 @@ export default function MemoryWall() {
         }
       })
       .catch(() => {});
+
+    const handleNavClick = (e) => {
+      if (e.detail === '#memories') {
+        setIsExpanded(true);
+      }
+    };
+    window.addEventListener('nav-section-click', handleNavClick);
+    return () => window.removeEventListener('nav-section-click', handleNavClick);
   }, []);
+
+  const handleToggle = async () => {
+    if (!isExpanded) {
+      try {
+        const data = await fetchMemoriesData();
+        if (Array.isArray(data) && data.length > 0) {
+          setMemories(data.map(item => ({
+            ...item,
+            image: resolveImage(item)
+          })));
+        }
+      } catch (e) {}
+    }
+    setIsExpanded(!isExpanded);
+  };
 
   const handleOpenPhoto = async (item) => {
     setActiveMemory({ ...item, isFetching: true });
@@ -130,132 +154,132 @@ export default function MemoryWall() {
   return (
     <section id="memories" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       {/* Section Header */}
-      <div className="text-center mb-14">
+      <div className="text-center mb-10">
         <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-accent)]">
-          Chapter 05
+          Chapter 06
         </span>
         <h2 className="font-heading text-4xl sm:text-5xl font-bold text-[var(--text-primary)] mt-1 section-title">
           Memory Wall
         </h2>
         <p className="text-[var(--text-muted)] text-sm sm:text-base max-w-xl mx-auto mt-4">
-          Click on any photo's "View Photo Information" button below to fetch and view photo details inline directly on the page.
+          A visual collection of precious moments, stages, and milestones.
         </p>
 
         <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
           <button
-            onClick={async () => {
-              try {
-                const data = await fetchMemoriesData();
-                if (Array.isArray(data) && data.length > 0) {
-                  setMemories(data.map(item => ({
-                    ...item,
-                    image: resolveImage(item)
-                  })));
-                }
-              } catch (e) {}
-            }}
-            className="px-6 py-2.5 rounded-full bg-[var(--color-primary)] text-[var(--color-cream)] text-sm font-semibold hover:bg-[var(--color-dark-coffee)] hover:scale-105 transition-all inline-flex items-center gap-2 shadow-sm cursor-pointer"
+            onClick={handleToggle}
+            className="px-8 py-3.5 rounded-full bg-[var(--color-primary)] text-[var(--color-cream)] font-bold text-sm hover:bg-[var(--color-dark-coffee)] hover:scale-105 transition-all inline-flex items-center gap-2.5 shadow-md cursor-pointer"
           >
             <Sparkles className="w-4 h-4 text-amber-300" />
-            <span>View Memories Information</span>
+            <span>{isExpanded ? 'Hide Memories Information ▲' : 'View Memories Information ✨'}</span>
           </button>
 
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="px-5 py-2.5 rounded-full border border-[var(--border-accent)] bg-[var(--bg-card)] text-[var(--text-primary)] text-sm font-medium hover:border-[var(--color-primary)] hover:scale-105 transition-all inline-flex items-center gap-2 shadow-sm cursor-pointer"
-          >
-            <Plus className="w-4 h-4 text-[var(--color-primary)]" />
-            <span>Add Photo Card</span>
-          </button>
+          {isExpanded && (
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="px-5 py-3 rounded-full border border-[var(--border-accent)] bg-[var(--bg-card)] text-[var(--text-primary)] text-sm font-medium hover:border-[var(--color-primary)] hover:scale-105 transition-all inline-flex items-center gap-2 shadow-sm cursor-pointer"
+            >
+              <Plus className="w-4 h-4 text-[var(--color-primary)]" />
+              <span>Add Photo Card</span>
+            </button>
+          )}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-2">
-        {memories.map((item) => {
-          const isExpanded = activeMemory?.id === item.id;
+      {/* Collapsible Grid */}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.5 }}
+            className="overflow-hidden pt-4"
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-2">
+              {memories.map((item) => {
+                const isPhotoExpanded = activeMemory?.id === item.id;
 
-          return (
-            <motion.div
-              key={item.id}
-              layout
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-              className="journal-paper p-6 flex flex-col justify-between rounded-2xl border border-[var(--border-accent)] hover:border-[var(--color-primary)] shadow-sm hover:shadow-md transition-all group relative overflow-hidden"
-            >
-              <div>
-                <div className="flex items-center justify-between gap-2 mb-4">
-                  <span className="stamp-badge text-xs py-1 px-3">
-                    {item.tag}
-                  </span>
-                  <span className="text-[10px] font-semibold text-[var(--color-accent)] uppercase tracking-wider">
-                    {item.date}
-                  </span>
-                </div>
+                return (
+                  <div
+                    key={item.id}
+                    className="journal-paper p-6 flex flex-col justify-between rounded-2xl border border-[var(--border-accent)] hover:border-[var(--color-primary)] shadow-sm hover:shadow-md transition-all group relative overflow-hidden"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-2 mb-4">
+                        <span className="stamp-badge text-xs py-1 px-3">
+                          {item.tag}
+                        </span>
+                        <span className="text-[10px] font-semibold text-[var(--color-accent)] uppercase tracking-wider">
+                          {item.date}
+                        </span>
+                      </div>
 
-                <div className="w-14 h-14 rounded-2xl bg-[var(--color-accent-light)] text-[var(--color-primary)] flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-[var(--color-primary)] group-hover:text-[var(--color-cream)] transition-all shadow-xs">
-                  <Camera className="w-7 h-7" />
-                </div>
+                      <div className="w-14 h-14 rounded-2xl bg-[var(--color-accent-light)] text-[var(--color-primary)] flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-[var(--color-primary)] group-hover:text-[var(--color-cream)] transition-all shadow-xs">
+                        <Camera className="w-7 h-7" />
+                      </div>
 
-                <h3 className="font-heading text-xl font-bold text-[var(--text-primary)] mb-2 group-hover:text-[var(--color-primary)] transition-colors">
-                  {item.title}
-                </h3>
-              </div>
+                      <h3 className="font-heading text-xl font-bold text-[var(--text-primary)] mb-2 group-hover:text-[var(--color-primary)] transition-colors">
+                        {item.title}
+                      </h3>
+                    </div>
 
-              <div>
-                <button
-                  onClick={() => {
-                    if (isExpanded) {
-                      setActiveMemory(null);
-                    } else {
-                      handleOpenPhoto(item);
-                    }
-                  }}
-                  className="w-full py-2.5 px-4 rounded-xl bg-[var(--bg-card-secondary)] text-[var(--color-primary)] text-xs font-bold flex items-center justify-center gap-2 hover:bg-[var(--color-primary)] hover:text-[var(--color-cream)] transition-all shadow-2xs cursor-pointer"
-                >
-                  <Sparkles className="w-4 h-4 text-amber-500" />
-                  <span>{isExpanded ? 'Hide Photo Details ▲' : 'View Photo Information 📸'}</span>
-                </button>
+                    <div>
+                      <button
+                        onClick={() => {
+                          if (isPhotoExpanded) {
+                            setActiveMemory(null);
+                          } else {
+                            handleOpenPhoto(item);
+                          }
+                        }}
+                        className="w-full py-2.5 px-4 rounded-xl bg-[var(--bg-card-secondary)] text-[var(--color-primary)] text-xs font-bold flex items-center justify-center gap-2 hover:bg-[var(--color-primary)] hover:text-[var(--color-cream)] transition-all shadow-2xs cursor-pointer"
+                      >
+                        <Sparkles className="w-4 h-4 text-amber-500" />
+                        <span>{isPhotoExpanded ? 'Hide Photo Details ▲' : 'View Photo Information 📸'}</span>
+                      </button>
 
-                {/* Inline Expanded Photo Details */}
-                <AnimatePresence>
-                  {isExpanded && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="mt-4 pt-4 border-t border-[var(--border-accent)] overflow-hidden"
-                    >
-                      {detailLoading ? (
-                        <div className="py-6 text-center flex flex-col items-center justify-center gap-2">
-                          <Loader2 className="w-6 h-6 text-[var(--color-primary)] animate-spin" />
-                          <p className="text-xs font-semibold text-[var(--text-muted)]">Fetching photo record from API...</p>
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          <div className="rounded-xl overflow-hidden shadow-sm aspect-video bg-stone-100">
-                            <img
-                              src={activeMemory.image}
-                              alt={activeMemory.title}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                          <div className="p-3 rounded-xl bg-[var(--bg-card-secondary)] border border-[var(--border-accent)]">
-                            <p className="text-xs text-[var(--text-primary)] leading-relaxed italic">
-                              "{activeMemory.caption}"
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </motion.div>
-          );
-        })}
-      </div>
+                      {/* Inline Expanded Photo Details */}
+                      <AnimatePresence>
+                        {isPhotoExpanded && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="mt-4 pt-4 border-t border-[var(--border-accent)] overflow-hidden"
+                          >
+                            {detailLoading ? (
+                              <div className="py-6 text-center flex flex-col items-center justify-center gap-2">
+                                <Loader2 className="w-6 h-6 text-[var(--color-primary)] animate-spin" />
+                                <p className="text-xs font-semibold text-[var(--text-muted)]">Fetching photo record from API...</p>
+                              </div>
+                            ) : (
+                              <div className="space-y-3">
+                                <div className="rounded-xl overflow-hidden shadow-sm aspect-video bg-stone-100">
+                                  <img
+                                    src={activeMemory.image}
+                                    alt={activeMemory.title}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                                <div className="p-3 rounded-xl bg-[var(--bg-card-secondary)] border border-[var(--border-accent)]">
+                                  <p className="text-xs text-[var(--text-primary)] leading-relaxed italic">
+                                    "{activeMemory.caption}"
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Add Custom Note Simulator Modal */}
       <AnimatePresence>

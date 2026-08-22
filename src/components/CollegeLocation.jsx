@@ -2,11 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Navigation, ExternalLink, School, Compass, Sparkles, X, Loader2 } from 'lucide-react';
 import { fetchLocationData } from '../services/api';
-import SectionStateStatus from './SectionStateStatus';
 
 export default function CollegeLocation() {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
   const [showLocationDetails, setShowLocationDetails] = useState(false);
 
   const [locationInfo, setLocationInfo] = useState({
@@ -21,36 +19,35 @@ export default function CollegeLocation() {
   });
 
   const handleFetchLocation = async () => {
-    setLoading(true);
-    setError(false);
-    setShowLocationDetails(true);
-
-    try {
-      const data = await fetchLocationData();
-      if (data) {
-        setLocationInfo((prev) => ({
-          university_name: data.university_name || prev.university_name,
-          location_city: data.location_city || prev.location_city,
-          description: data.description || prev.description,
-          department: data.department || prev.department,
-          academic_year: data.academic_year || prev.academic_year,
-          status: data.status || prev.status,
-          map_embed_url: data.map_embed_url || prev.map_embed_url,
-          direct_maps_url: data.direct_maps_url || prev.direct_maps_url
-        }));
+    if (!showLocationDetails) {
+      setLoading(true);
+      try {
+        const data = await fetchLocationData();
+        if (data) {
+          setLocationInfo((prev) => ({
+            university_name: data.university_name || prev.university_name,
+            location_city: data.location_city || prev.location_city,
+            description: data.description || prev.description,
+            department: data.department || prev.department,
+            academic_year: data.academic_year || prev.academic_year,
+            status: data.status || prev.status,
+            map_embed_url: data.map_embed_url || prev.map_embed_url,
+            direct_maps_url: data.direct_maps_url || prev.direct_maps_url
+          }));
+        }
+      } catch (err) {
+        console.error('Error fetching location data:', err);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error('Error fetching location data from DB:', err);
-      setError(true);
-    } finally {
-      setLoading(false);
     }
+    setShowLocationDetails(!showLocationDetails);
   };
 
   useEffect(() => {
     const handleNavClick = (e) => {
       if (e.detail === '#college' || e.detail === '#location') {
-        // Option to trigger or reset
+        setShowLocationDetails(true);
       }
     };
     window.addEventListener('nav-section-click', handleNavClick);
@@ -62,32 +59,26 @@ export default function CollegeLocation() {
       <div id="location" className="absolute -top-28" />
       
       {/* Header */}
-      <div className="text-center mb-14">
+      <div className="text-center mb-10">
         <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-accent)]">
-          Chapter 06
+          Chapter 07
         </span>
         <h2 className="font-heading text-4xl sm:text-5xl font-bold text-[var(--text-primary)] mt-1 section-title">
           College & Location
         </h2>
         <p className="text-[var(--text-muted)] text-sm sm:text-base max-w-xl mx-auto mt-4">
-          Click the button below to fetch campus details and load the live interactive Google Map inline on the page.
+          Campus information, academic department, and interactive live location map.
         </p>
 
         <button
-          onClick={() => {
-            if (showLocationDetails) {
-              setShowLocationDetails(false);
-            } else {
-              handleFetchLocation();
-            }
-          }}
+          onClick={handleFetchLocation}
           disabled={loading}
-          className="mt-6 px-8 py-3.5 rounded-full bg-[var(--color-primary)] text-[var(--color-cream)] font-bold text-sm hover:bg-[var(--color-dark-coffee)] transition-all shadow-md inline-flex items-center justify-center gap-2 cursor-pointer"
+          className="mt-6 px-8 py-3.5 rounded-full bg-[var(--color-primary)] text-[var(--color-cream)] font-bold text-sm hover:bg-[var(--color-dark-coffee)] hover:scale-105 transition-all shadow-md inline-flex items-center justify-center gap-2 cursor-pointer"
         >
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Fetching Location & Map from API...</span>
+              <span>Fetching Location & Map...</span>
             </>
           ) : (
             <>
@@ -98,43 +89,36 @@ export default function CollegeLocation() {
         </button>
       </div>
 
-      {/* Main Preview Card */}
-      <div className="max-w-3xl mx-auto">
-        <motion.div
-          whileHover={{ scale: 1.01 }}
-          className="journal-paper p-8 text-center rounded-3xl border-2 border-[var(--border-accent)] hover:border-[var(--color-primary)] shadow-md transition-all group relative overflow-hidden"
-        >
-          <div className="w-16 h-16 rounded-2xl bg-[var(--color-primary)] text-[var(--color-cream)] flex items-center justify-center mx-auto mb-5 shadow-md group-hover:scale-110 transition-transform">
-            <School className="w-8 h-8" />
-          </div>
+      {/* Main Collapsible Content */}
+      <AnimatePresence>
+        {showLocationDetails && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.5 }}
+            className="overflow-hidden pt-4"
+          >
+            <div className="max-w-3xl mx-auto">
+              <div className="journal-paper p-8 text-center rounded-3xl border-2 border-[var(--border-accent)] hover:border-[var(--color-primary)] shadow-md transition-all group relative overflow-hidden">
+                <div className="w-16 h-16 rounded-2xl bg-[var(--color-primary)] text-[var(--color-cream)] flex items-center justify-center mx-auto mb-5 shadow-md group-hover:scale-110 transition-transform">
+                  <School className="w-8 h-8" />
+                </div>
 
-          <span className="stamp-badge text-xs mb-3 inline-block">
-            Campus Headquarters
-          </span>
+                <span className="stamp-badge text-xs mb-3 inline-block">
+                  Campus Headquarters
+                </span>
 
-          <h3 className="font-heading text-3xl font-bold text-[var(--text-primary)] mb-2">
-            {locationInfo.university_name}
-          </h3>
+                <h3 className="font-heading text-3xl font-bold text-[var(--text-primary)] mb-2">
+                  {locationInfo.university_name}
+                </h3>
 
-          <p className="text-sm font-semibold text-[var(--color-primary)] mb-6 flex items-center justify-center gap-1.5">
-            <MapPin className="w-4 h-4 text-rose-500" /> {locationInfo.location_city}
-          </p>
+                <p className="text-sm font-semibold text-[var(--color-primary)] mb-6 flex items-center justify-center gap-1.5">
+                  <MapPin className="w-4 h-4 text-rose-500" /> {locationInfo.location_city}
+                </p>
 
-          {/* Inline Location & Google Maps Container */}
-          <AnimatePresence>
-            {showLocationDetails && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="pt-6 border-t border-[var(--border-accent)] text-left overflow-hidden"
-              >
-                {loading ? (
-                  <div className="py-12 text-center flex flex-col items-center justify-center gap-3">
-                    <Loader2 className="w-8 h-8 text-[var(--color-primary)] animate-spin" />
-                    <p className="text-xs font-semibold text-[var(--text-muted)]">Loading campus map & details from API...</p>
-                  </div>
-                ) : (
+                {/* Inline Location & Google Maps Container */}
+                <div className="pt-6 border-t border-[var(--border-accent)] text-left">
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
                     {/* Info Column */}
                     <div className="lg:col-span-5 flex flex-col gap-4">
@@ -188,12 +172,12 @@ export default function CollegeLocation() {
                       </div>
                     </div>
                   </div>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-      </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

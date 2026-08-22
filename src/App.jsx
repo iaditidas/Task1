@@ -4,6 +4,7 @@ import Hero from './components/Hero';
 import AboutMe from './components/AboutMe';
 import MyJourney from './components/MyJourney';
 import Education from './components/Education';
+import Skills from './components/Skills';
 import Hobbies from './components/Hobbies';
 import MemoryWall from './components/MemoryWall';
 import CollegeLocation from './components/CollegeLocation';
@@ -20,6 +21,7 @@ export default function App() {
         <AboutMe />
         <MyJourney />
         <Education />
+        <Skills />
         <Hobbies />
         <MemoryWall />
         <CollegeLocation />
@@ -30,3 +32,4 @@ export default function App() {
     </div>
   );
 }
+
